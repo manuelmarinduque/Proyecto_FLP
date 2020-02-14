@@ -117,6 +117,7 @@
 ;; Ejecución del interpretador
 (interpretador)
 
+;; Ejemplos
 ;function funcionX (a b c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;function funcionY (a b c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
