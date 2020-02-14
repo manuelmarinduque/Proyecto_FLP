@@ -67,6 +67,7 @@
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
+    (expresion ("for" "(" (separated-list expresion ";") ")" "{" (separated-list expresion ";") "}") iteracion-exp)
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)    
     (primitiva-aritmetica ("+") suma-prim)
@@ -114,4 +115,5 @@
 ;function funcionX (a b c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;function funcionY (a b c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
+;for (var(i=1); [i < 9]; (i add1 1)) {var(a=2, b=5); "hola"}
     
