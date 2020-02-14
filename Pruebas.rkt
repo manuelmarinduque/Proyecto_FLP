@@ -25,9 +25,9 @@
 ;;                 <longitud-exp (cadena)>
 ;;             ::= concat (<expresion> <expresion>)
 ;;                 <concatenacion-exp (cadena1 cadena2)>
-;;             ::= function <identificador> (<identificador>)* {<expresion>}
+;;             ::= function <identificador> ({<identificador>}*(,)) {<expresion>}
 ;;                 <procedimiento-exp (nombre-funcion parametros cuerpo)
-;;             ::= call <identificador> (<identificador>)*
+;;             ::= call <identificador> ({<expresion>}*(,))
 ;;                 <invocacion-proc-exp (nombre-funcion argumentos)
 ;;             ::= <expresion> <primitiva-aritmetica> <expresion>
 ;;                 <primitiva-aritmetica-exp (componente1 operando componente2)>
@@ -60,11 +60,11 @@
     ;(expresion (hexadecimal) hexadecimal-exp)
     
     (expresion ("\"" identificador "\"") string-exp)
-    (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
+    (expresion ("if" "(" expresion ")" "{" (separated-list expresion ";") "}" "else" "{" (separated-list expresion ";") "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (arbno identificador) ")" "{" expresion "}") procedimiento-exp)
-    (expresion ("call" identificador "(" (arbno expresion) ")") invocacion-proc-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
+    (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
     
@@ -112,5 +112,7 @@
 ;; Ejecución del interpretador
 (interpretador)
 
-;;function funcionX (a b c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"}}
+;function funcionX (a b c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
+;function funcionY (a b c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
+;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
     
