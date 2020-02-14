@@ -17,7 +17,7 @@
 ;;             ::= <octal>
 ;;                 <octal-exp (octal)>
 
-;;             ::= var {identificador = <expresion>}*(,)             -> no del todo
+;;             ::= var ({identificador = <expresion>}*(,))
 ;;             ::= <definicion-exp (ids rands)>
 ;;             ::= if (<expresion>) {<expresion>} else {<expresion>}
 ;;                 <condicional-exp (condicion sentencia-verdad sentencia-falsa)>
@@ -46,7 +46,8 @@
     (numero ("-" digit (arbno digit)) number)
     (flotante (digit (arbno digit) "." digit (arbno digit)) number)
     (flotante ("-" digit (arbno digit) "." digit (arbno digit)) number)
-    ;(octal ("0o" (arbno digit (not 8))) string)
+    
+    ;(octal ("0o" (arbno (or 0 1 2 3 4 5 6 7))) string)
     ))
 
 ;; Especificación gramatical (lhs)
@@ -60,16 +61,14 @@
     ;(expresion (hexadecimal) hexadecimal-exp)
     
     (expresion ("\"" identificador "\"") string-exp)
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
     (expresion ("if" "(" expresion ")" "{" (separated-list expresion ";") "}" "else" "{" (separated-list expresion ";") "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
-    (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
-    
-    (expresion ("var" "(" (arbno identificador "=" expresion) ")") definicion-exp)
-    
+    (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)    
     (primitiva-aritmetica ("+") suma-prim)
     (primitiva-aritmetica ("-") resta-prim)
     (primitiva-aritmetica ("*") multiplicacion-prim)
