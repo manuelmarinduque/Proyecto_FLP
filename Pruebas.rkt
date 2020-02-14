@@ -1,44 +1,5 @@
 #lang eopl
 
-;; Gramática en BNF
-;;
-;; <program> ::= <expresion>
-;;               <un-programa (expresion)>
-;;
-;; <expresion> ::= <numero>
-;;                 <numero-exp (numero)>
-;;             ::= <identificador>
-;;                 <identificador-exp (identificador)>
-;;             ::= <flotante>
-;;                 <flotante-exp (flotante)>
-
-;;             ::= <hexadecimal>
-;;                 <hexadecimal-exp (hexadecimal)>
-;;             ::= <octal>
-;;                 <octal-exp (octal)>
-
-;;             ::= var ({identificador = <expresion>}*(,))
-;;             ::= <definicion-exp (ids rands)>
-;;             ::= if (<expresion>) { {<expresion>}*(;) } else { {<expresion>}*(;) }
-;;                 <condicional-exp (condicion sentencia-verdad sentencia-falsa)>
-;;             ::= length (<expresion>)
-;;                 <longitud-exp (cadena)>
-;;             ::= concat (<expresion> <expresion>)
-;;                 <concatenacion-exp (cadena1 cadena2)>
-;;             ::=  function <identificador> ({<identificador>}*(,)) { {<expresion>}*(;) }
-;;                 <procedimiento-exp (nombre-funcion parametros cuerpo)
-;;             ::= call <identificador> ({<expresion>}*(,))
-;;                 <invocacion-proc-exp (nombre-funcion argumentos)
-;;             ::= for (<expresion>; <expresion>; <expresion>) "{" {<expresion>}*(";") "};"
-;;                 <iteracion-exp (inicial-exp, condicion-for, incrementador, cuerpo)>
-;;             ::= <expresion> <primitiva-aritmetica> <expresion>
-;;                 <primitiva-aritmetica-exp (componente1 operando componente2)>
-;;             ::= <expresion> <primitiva-booleana> <expresion>
-;;                 <primitiva-booleana-exp (componente1 operando componente2)>
-;;
-;; <primitiva> ::= | + | - | * | % | / | ++ | -- |
-;; <primitiva-booleana> ::= | < | > | <= | >= | == | != | && | || | ! |
-
 ;; Especificación léxica (rhs)
 (define especificacion-lexica
   '((espacio (whitespace) skip)
@@ -119,9 +80,9 @@
 (interpretador)
 
 ;; Ejemplos
-;function funcionX (a b c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
-;function funcionY (a b c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
+;function funcionX (a, b, c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
+;function funcionY (a, b, c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
-;for (var(i=1); [i < 9]; (i add1 1)) {var(a=2, b=5); "hola"}
+;for (var(i=1); [i < 9]; (i ++ 1)) {var(a=2, b=5); "hola"}
 ;0x700FDA
 ;0o74563
