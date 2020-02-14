@@ -19,13 +19,13 @@
 
 ;;             ::= var ({identificador = <expresion>}*(,))
 ;;             ::= <definicion-exp (ids rands)>
-;;             ::= if (<expresion>) {<expresion>} else {<expresion>}
+;;             ::= if (<expresion>) { {<expresion>}*(;) } else { {<expresion>}*(;) }
 ;;                 <condicional-exp (condicion sentencia-verdad sentencia-falsa)>
 ;;             ::= length (<expresion>)
 ;;                 <longitud-exp (cadena)>
 ;;             ::= concat (<expresion> <expresion>)
 ;;                 <concatenacion-exp (cadena1 cadena2)>
-;;             ::= function <identificador> ({<identificador>}*(,)) {<expresion>}
+;;             ::=  function <identificador> ({<identificador>}*(,)) { {<expresion>}*(;) }
 ;;                 <procedimiento-exp (nombre-funcion parametros cuerpo)
 ;;             ::= call <identificador> ({<expresion>}*(,))
 ;;                 <invocacion-proc-exp (nombre-funcion argumentos)
@@ -48,8 +48,10 @@
     (numero ("-" digit (arbno digit)) number)
     (flotante (digit (arbno digit) "." digit (arbno digit)) number)
     (flotante ("-" digit (arbno digit) "." digit (arbno digit)) number)
-    
-    ;(octal ("0o" (arbno (or 0 1 2 3 4 5 6 7))) string)
+    (octal ("0o" (or "1" "2" "3" "4" "5" "6" "7") (arbno (or "1" "2" "3" "4" "5" "6" "7"))) string)
+    (hexadecimal ("0x" (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "A" "B" "C" "D" "E" "F")
+                       (arbno (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "A" "B" "C" "D" "E" "F")))
+                 string)   
     ))
 
 ;; Especificación gramatical (lhs)
@@ -59,8 +61,8 @@
     (expresion (identificador) identificador-exp)
     (expresion (flotante) flotante-exp)
     
-    ;(expresion (octal) octal-exp)
-    ;(expresion (hexadecimal) hexadecimal-exp)
+    (expresion (octal) octal-exp)
+    (expresion (hexadecimal) hexadecimal-exp)
     
     (expresion ("\"" identificador "\"") string-exp)
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
@@ -122,4 +124,5 @@
 ;function funcionY (a b c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
 ;for (var(i=1); [i < 9]; (i add1 1)) {var(a=2, b=5); "hola"}
-    
+;0x700FDA
+;0o74563
