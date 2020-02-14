@@ -29,6 +29,8 @@
 ;;                 <procedimiento-exp (nombre-funcion parametros cuerpo)
 ;;             ::= call <identificador> ({<expresion>}*(,))
 ;;                 <invocacion-proc-exp (nombre-funcion argumentos)
+;;             ::= for (<expresion>; <expresion>; <expresion>) "{" {<expresion>}*(";") "};"
+;;                 <iteracion-exp (inicial-exp, condicion-for, incrementador, cuerpo)>
 ;;             ::= <expresion> <primitiva-aritmetica> <expresion>
 ;;                 <primitiva-aritmetica-exp (componente1 operando componente2)>
 ;;             ::= <expresion> <primitiva-booleana> <expresion>
@@ -67,7 +69,10 @@
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
-    (expresion ("for" "(" (separated-list expresion ";") ")" "{" (separated-list expresion ";") "}") iteracion-exp)
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" (separated-list expresion ";") "}") iteracion-exp)
+
+    (expresion ("functionR" identificador "(" identificador (arbno "," identificador) ")""{" (arbno expresion) "};")funcion_recursiva)
+    
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)    
     (primitiva-aritmetica ("+") suma-prim)
