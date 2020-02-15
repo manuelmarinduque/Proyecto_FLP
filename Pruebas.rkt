@@ -31,7 +31,8 @@
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" (separated-list expresion ";") "}") iteracion-exp)
 
-    (expresion ("functionR" identificador "(" identificador (arbno "," identificador) ")""{" (arbno expresion) "};")funcion_recursiva)
+    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-rec-exp)
+    (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
