@@ -4,7 +4,7 @@
 (define especificacion-lexica
   '((espacio (whitespace) skip)
     (comentario ("//" (arbno (not #\newline))) skip)
-    (identificador (letter (arbno (or letter digit))) symbol)
+    (identificador (letter (arbno (or letter digit "-"))) symbol)
     (numero (digit (arbno digit)) number)
     (numero ("-" digit (arbno digit)) number)
     (flotante (digit (arbno digit) "." digit (arbno digit)) number)
@@ -85,5 +85,6 @@
 ;function funcionY (a, b, c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
 ;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
 ;for (var(i=1); [i < 9]; (i ++ 1)) {var(a=2, b=5); "hola"}
+;function-rec funcion-recursiva (x, y, z) {var(o=call-rec funcion-recursiva (1, 2, 3))}
 ;0x700FDA
 ;0o74563
