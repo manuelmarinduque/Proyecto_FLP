@@ -36,7 +36,6 @@
     
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
-;   (expresion ("|" expresion primitiva-add "|") primitiva-add-exp)
     (expresion ("true") verdad-exp)
     (expresion ("false") falso-exp)
     (primitiva-aritmetica ("+") suma-prim)
@@ -46,8 +45,6 @@
     (primitiva-aritmetica ("%") modulo-prim)
     (primitiva-aritmetica ("++") incremento-prim)
     (primitiva-aritmetica ("--") decremento-prim)
-;    (primitiva-add ("++") incremento-prim)
-;    (primitiva-add ("--") decremento-prim)
     (primitiva-booleana ("<") menor-prim)
     (primitiva-booleana (">") mayor-prim)
     (primitiva-booleana ("<=") menor-igual-prim)
@@ -59,38 +56,8 @@
     (primitiva-booleana ("!") negacion-prim)
     ))
 
-
-;;DEFINIMOS LOS AMBIENTES
-
-(define-datatype ambiente ambiente?
-  (ambiente-vacio)
-  (ambiente-extendido
-   (id (list-of symbol?))
-   (values (list-of value?))
-   (amb ambiente?)))
-
-
-(define value?
-  (lambda (x)
-    (or(number? x)(procval? x))))
-  
-;;DEFINIR AMBIENTE INICIAL
-
-(define ambiente-inicial
-  (ambiente-vacio))
-
 ;; Creación de los datatypes
 (sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
-
-
-
-;;Procedimiento
-(define-datatype procval procval?
-  (closure (list-ids (list-of symbol?))
-            (body expresion?)
-            (ambiente ambiente?)))
-
-
 
 ;; Muestra de los datatypes creados
 (define the-datatypes (lambda () (sllgen:show-define-datatypes especificacion-lexica especificacion-gramatical)))
@@ -104,23 +71,11 @@
     especificacion-lexica
     especificacion-gramatical)))
 
-
-
-;;EVALUAR EXPRESION
-
-
-(define evaluar-expresion
-  (lambda (exp ambiente)
-    (cases expresion exp
-      (numero-exp))))
-
-
-
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
   (lambda (pgm)
     (cases programa pgm
-      (un-programa (expresion) (evaluar-expresion expresion ambiente-inicial)))))
+      (un-programa (expresion) expresion))))
 
 ;; Ejecución del interpretador
 (interpretador)
