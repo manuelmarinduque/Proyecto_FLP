@@ -37,8 +37,8 @@
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
 ;   (expresion ("|" expresion primitiva-add "|") primitiva-add-exp)
-    (expresion ("true") verdad-exp)
-    (expresion ("false") falso-exp)
+    (expresion ("True") verdad-exp)
+    (expresion ("False") falso-exp)
     (primitiva-aritmetica ("+") suma-prim)
     (primitiva-aritmetica ("-") resta-prim)
     (primitiva-aritmetica ("*") multiplicacion-prim)
@@ -112,10 +112,28 @@
 (define evaluar-expresion
   (lambda (exp ambiente)
     (cases expresion exp
-      (numero-exp))))
+      (numero-exp (numero) numero)
+      (flotante-exp (flotante) flotante)
+      (octal-exp (octal) octal)
+      (hexadecimal-exp (hexadecimal) hexadecimal)
+      (identificador-exp (identificador) identificador)
+      (string-exp (cadena) cadena)
+      (definicion-exp (identificadores valores) (list "var" identificadores valores))
+      (condicional-exp (condicion sentencia-verdad sentencia-falsa) (list "if" condicion sentencia-verdad sentencia-falsa))
+      (longitud-exp (cadena) "tamaño")
+      (concatenacion-exp (cadena1 cadena2) (list "concat" cadena1 cadena2))
+      (procedimiento-exp (nombre-funcion parametros cuerpo) (list "function" nombre-funcion parametros cuerpo))
+      (invocacion-proc-exp (nombre-funcion argumento) (list "call" nombre-funcion argumento))
+      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))
+      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
+      (primitiva-aritmetica-exp (componente1 operando componente2) (list "primitiva" componente1 operando componente2))
+      (primitiva-booleana-exp (componente1 operando componente2) (list "booleana" componente1 operando componente2))
+      (verdad-exp () "True")
+      (falso-exp () "False"))))
 
 
-
+      
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
   (lambda (pgm)
