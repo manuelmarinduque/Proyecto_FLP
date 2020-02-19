@@ -30,10 +30,8 @@
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" (separated-list expresion ";") "}") iteracion-exp)
-
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
-    
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
 ;   (expresion ("|" expresion primitiva-add "|") primitiva-add-exp)
@@ -59,9 +57,13 @@
     (primitiva-booleana ("!") negacion-prim)
     ))
 
+;; Creación de los datatypes
+(sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
 
-;;DEFINIMOS LOS AMBIENTES
+;; Muestra de los datatypes creados
+(define the-datatypes (lambda () (sllgen:show-define-datatypes especificacion-lexica especificacion-gramatical)))
 
+;; Definición del tipo de dato ambiente
 (define-datatype ambiente ambiente?
   (ambiente-vacio)
   (ambiente-extendido
@@ -69,31 +71,19 @@
    (values (list-of value?))
    (amb ambiente?)))
 
-
 (define value?
   (lambda (x)
     (or(number? x)(procval? x))))
   
-;;DEFINIR AMBIENTE INICIAL
-
+;; Definición del ambiente inicial
 (define ambiente-inicial
   (ambiente-vacio))
 
-;; Creación de los datatypes
-(sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
-
-
-
-;;Procedimiento
+;; Definición del tipo de dato clousure
 (define-datatype procval procval?
   (closure (list-ids (list-of symbol?))
             (body expresion?)
             (ambiente ambiente?)))
-
-
-
-;; Muestra de los datatypes creados
-(define the-datatypes (lambda () (sllgen:show-define-datatypes especificacion-lexica especificacion-gramatical)))
 
 ;; El interpretador
 (define interpretador
@@ -104,11 +94,7 @@
     especificacion-lexica
     especificacion-gramatical)))
 
-
-
-;;EVALUAR EXPRESION
-
-
+;; Función evaluar programa
 (define evaluar-expresion
   (lambda (exp ambiente)
     (cases expresion exp
