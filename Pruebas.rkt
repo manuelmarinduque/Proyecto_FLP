@@ -24,19 +24,19 @@
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
-    (expresion ("if" "(" expresion ")" "{" (separated-list expresion ";") "}" "else" "{" (separated-list expresion ";") "}") condicional-exp)
+    (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
-    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" (separated-list expresion ";") "}") iteracion-exp)
-    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" (separated-list expresion ";") "}") procedimiento-rec-exp)
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
+    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
     (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
 ;   (expresion ("|" expresion primitiva-add "|") primitiva-add-exp)
-    (expresion ("True") verdad-exp)
-    (expresion ("False") falso-exp)
+    (expresion ("true") verdad-exp)
+    (expresion ("false") falso-exp)
     (primitiva-aritmetica ("+") suma-prim)
     (primitiva-aritmetica ("-") resta-prim)
     (primitiva-aritmetica ("*") multiplicacion-prim)
@@ -55,6 +55,8 @@
     (primitiva-booleana ("&&") conjuncion-prim)
     (primitiva-booleana ("||") disyuncion-prim)
     (primitiva-booleana ("!") negacion-prim)
+    ; Secuenciación
+    (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp)
     ))
 
 ;; Creación de los datatypes
@@ -115,8 +117,10 @@
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
       (primitiva-aritmetica-exp (componente1 operando componente2) (list "primitiva" componente1 operando componente2))
       (primitiva-booleana-exp (componente1 operando componente2) (list "booleana" componente1 operando componente2))
-      (verdad-exp () "True")
-      (falso-exp () "False"))))
+      (verdad-exp () "true")
+      (falso-exp () "false")
+      (secuenciacion-exp (lista-exp) "secuenciacion"))
+    ))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
@@ -140,3 +144,4 @@
 ;function-rec funcion-recursiva (x, y, z) {var(o=call-rec funcion-recursiva (1, 2, 3))}
 ;0x700FDA
 ;0o74563
+;{var(x=1);if (x) {true} else {false}}
