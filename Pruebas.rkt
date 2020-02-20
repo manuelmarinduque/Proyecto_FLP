@@ -4,7 +4,7 @@
 (define especificacion-lexica
   '((espacio (whitespace) skip)
     (comentario ("//" (arbno (not #\newline))) skip)
-    (identificador (letter (arbno (or letter digit "-"))) symbol)
+    (identificador (letter (arbno (or letter digit "-" "_" "?" "¿" "!" "¡"))) symbol)
     (numero (digit (arbno digit)) number)
     (numero ("-" digit (arbno digit)) number)
     (flotante (digit (arbno digit) "." digit (arbno digit)) number)
@@ -106,7 +106,7 @@
       (string-exp (cadena) cadena)
       (definicion-exp (identificadores valores) (list "var" identificadores valores))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa) (list "if" condicion sentencia-verdad sentencia-falsa))
-      (longitud-exp (cadena) "tamaño")
+      (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (list "concat" cadena1 cadena2))
       (procedimiento-exp (nombre-funcion parametros cuerpo) (list "function" nombre-funcion parametros cuerpo))
       (invocacion-proc-exp (nombre-funcion argumento) (list "call" nombre-funcion argumento))
@@ -118,13 +118,16 @@
       (verdad-exp () "True")
       (falso-exp () "False"))))
 
-
-      
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
   (lambda (pgm)
     (cases programa pgm
       (un-programa (expresion) (evaluar-expresion expresion ambiente-inicial)))))
+
+;; Función que determina la longitud de una cadena
+(define longitud-cadena
+  (lambda cadena
+    (length (string->list (symbol->string (car cadena))))))
 
 ;; Ejecución del interpretador
 (interpretador)
