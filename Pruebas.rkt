@@ -79,7 +79,11 @@
   
 ;; Definición del ambiente inicial
 (define ambiente-inicial
-  (ambiente-vacio))
+  (lambda ()
+    (ambiente-extendido
+     '(x y z)
+     '(1 2 3)
+     (ambiente-vacio))))
 
 ;; Definición del tipo de dato clousure
 (define-datatype procval procval?
@@ -104,7 +108,7 @@
       (flotante-exp (flotante) flotante)
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
-      (identificador-exp (identificador) identificador)
+      (identificador-exp (identificador) (apply-env ambiente identificador))
       (string-exp (cadena) cadena)
       (definicion-exp (identificadores valores) (list "var" identificadores valores))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa)
@@ -136,12 +140,40 @@
 (define evaluar-programa
   (lambda (pgm)
     (cases programa pgm
-      (un-programa (expresion) (evaluar-expresion expresion ambiente-inicial)))))
+      (un-programa (expresion) (evaluar-expresion expresion (ambiente-inicial))))))
 
 ;; Función que determina la longitud de una cadena
 (define longitud-cadena
   (lambda cadena
     (length (string->list (symbol->string (car cadena))))))
+
+;; Función que busca un identificador dentro de un ambiente:
+; (Tomado del interpretador_simple del curso)
+(define apply-env
+  (lambda (env sym)
+    (cases ambiente env
+      (ambiente-vacio ()
+                      (eopl:error 'apply-env "No se encuentra ~s" sym))
+      (ambiente-extendido (syms vals env)
+                          (let ((pos (list-find-position sym syms)))
+                            (if (number? pos)
+                                (list-ref vals pos)
+                                (apply-env env sym)))))))
+
+;; Función para encontrar la posición de un identificador dentro de un ambiente
+(define list-find-position
+  (lambda (sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
+
+(define list-index
+  (lambda (pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((list-index-r (list-index pred (cdr ls))))
+              (if (number? list-index-r)
+                (+ list-index-r 1)
+                #f))))))
 
 ;; Ejecución del interpretador
 (interpretador)
