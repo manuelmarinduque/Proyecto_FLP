@@ -107,7 +107,17 @@
       (identificador-exp (identificador) identificador)
       (string-exp (cadena) cadena)
       (definicion-exp (identificadores valores) (list "var" identificadores valores))
-      (condicional-exp (condicion sentencia-verdad sentencia-falsa) (list "if" condicion sentencia-verdad sentencia-falsa))
+      (condicional-exp (condicion sentencia-verdad sentencia-falsa)
+                       (let
+                           (
+                            (valor-condicion (evaluar-expresion condicion ambiente))
+                            )
+                         (if (boolean? valor-condicion)
+                             (if valor-condicion
+                                 (evaluar-expresion sentencia-verdad ambiente)
+                                 (evaluar-expresion sentencia-falsa ambiente))
+                             (eopl:error "no boolean")))
+                           )
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (list "concat" cadena1 cadena2))
       (procedimiento-exp (nombre-funcion parametros cuerpo) (list "function" nombre-funcion parametros cuerpo))
@@ -117,8 +127,8 @@
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
       (primitiva-aritmetica-exp (componente1 operando componente2) (list "primitiva" componente1 operando componente2))
       (primitiva-booleana-exp (componente1 operando componente2) (list "booleana" componente1 operando componente2))
-      (verdad-exp () "true")
-      (falso-exp () "false")
+      (verdad-exp () #t)
+      (falso-exp () #f)
       (secuenciacion-exp (lista-exp) "secuenciacion"))
     ))
 
