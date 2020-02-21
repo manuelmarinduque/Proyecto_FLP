@@ -129,7 +129,15 @@
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
       (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
-      (primitiva-aritmetica-exp (componente1 operando componente2) (list "primitiva" componente1 operando componente2))
+      (primitiva-aritmetica-exp (componente1 operando componente2)
+                                (let
+                                    (
+                                     (op1 (evaluar-expresion componente1 ambiente))
+                                     (op2 (evaluar-expresion componente2 ambiente))
+                                    )
+                                  (evaluar-primitiva operando op1 op2)
+                                 )
+                                )
       (primitiva-booleana-exp (componente1 operando componente2) (list "booleana" componente1 operando componente2))
       (verdad-exp () #t)
       (falso-exp () #f)
@@ -161,6 +169,7 @@
                                 (apply-env env sym)))))))
 
 ;; Función para encontrar la posición de un identificador dentro de un ambiente
+; (Tomado del interpretador_simple del curso)
 (define list-find-position
   (lambda (sym los)
     (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
@@ -174,6 +183,19 @@
               (if (number? list-index-r)
                 (+ list-index-r 1)
                 #f))))))
+
+;; Función que realiza las operaciones aritméticas
+(define evaluar-primitiva
+  (lambda (op a b)
+    (cases primitiva-aritmetica op
+      (suma-prim () (+ a b))
+      (resta-prim () (- a b))
+      (multiplicacion-prim () (* a b))
+      (division-prim () (- a b))
+      (modulo-prim () (- a b))
+      (incremento-prim () (- a b))
+      (decremento-prim () (- a b))
+      )))  
 
 ;; Ejecución del interpretador
 (interpretador)
