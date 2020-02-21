@@ -191,10 +191,10 @@
       (suma-prim () (+ a b))
       (resta-prim () (- a b))
       (multiplicacion-prim () (* a b))
-      (division-prim () (- a b))
-      (modulo-prim () (- a b))
-      (incremento-prim () (- a b))
-      (decremento-prim () (- a b))
+      (division-prim () (/ a b))
+      (modulo-prim () (modulo a b))
+      (incremento-prim () (+ a 1))
+      (decremento-prim () (- a 1))
       )))  
 
 ;; Ejecución del interpretador
