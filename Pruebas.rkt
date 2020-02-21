@@ -121,7 +121,8 @@
                              (eopl:error "no boolean")))
                            )
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
-      (concatenacion-exp (cadena1 cadena2) (list "concat" cadena1 cadena2))
+      (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
+                                                          (evaluar-expresion cadena2 ambiente)))
       (procedimiento-exp (nombre-funcion parametros cuerpo) (list "function" nombre-funcion parametros cuerpo))
       (invocacion-proc-exp (nombre-funcion argumento) (list "call" nombre-funcion argumento))
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
@@ -157,8 +158,13 @@
 
 ;; Función que determina la longitud de una cadena
 (define longitud-cadena
-  (lambda cadena
-    (length (string->list (symbol->string (car cadena))))))
+  (lambda (cadena)
+    (length (string->list (symbol->string cadena)))))
+
+;; Función que concatena dos cadenas
+(define concatenacion
+  (lambda (cadena1 cadena2)
+    (string-append (symbol->string cadena1) (symbol->string cadena2))))
 
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
@@ -189,7 +195,7 @@
                 (+ list-index-r 1)
                 #f))))))
 
-;; Función que realiza las operaciones aritméticas
+;; Función que realiza las operaciones aritméticas y booleanas
 (define evaluar-primitiva
   (lambda (op a b)
     (cases primitiva op
@@ -208,6 +214,7 @@
       (disyuncion-prim () (or a b))
       )))
 
+;; Función que realizar el incremento y decremento en 1
 (define evaluar-primitiva2
   (lambda (op a)
     (cases primitiva2 op
