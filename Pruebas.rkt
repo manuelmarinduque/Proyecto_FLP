@@ -32,29 +32,26 @@
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
-    (expresion ("(" expresion primitiva-aritmetica expresion ")") primitiva-aritmetica-exp)
-    (expresion ("[" expresion primitiva-booleana expresion "]") primitiva-booleana-exp)
-;   (expresion ("|" expresion primitiva-add "|") primitiva-add-exp)
+    (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
+    (expresion ("!" expresion) negacion-exp)
+    (expresion ("[" expresion primitiva2 "]") primitiva2-exp)
     (expresion ("true") verdad-exp)
     (expresion ("false") falso-exp)
-    (primitiva-aritmetica ("+") suma-prim)
-    (primitiva-aritmetica ("-") resta-prim)
-    (primitiva-aritmetica ("*") multiplicacion-prim)
-    (primitiva-aritmetica ("/") division-prim)
-    (primitiva-aritmetica ("%") modulo-prim)
-    (primitiva-aritmetica ("++") incremento-prim)
-    (primitiva-aritmetica ("--") decremento-prim)
-;    (primitiva-add ("++") incremento-prim)
-;    (primitiva-add ("--") decremento-prim)
-    (primitiva-aritmetica ("<") menor-prim)
-    (primitiva-aritmetica (">") mayor-prim)
-    (primitiva-aritmetica ("<=") menor-igual-prim)
-    (primitiva-aritmetica (">=") mayor-igual-prim)
-    (primitiva-aritmetica ("==") igual-prim)
-    (primitiva-aritmetica ("!=") diferente-prim)
-    (primitiva-booleana ("&&") conjuncion-prim)
-    (primitiva-booleana ("||") disyuncion-prim)
-    (primitiva-booleana ("!") negacion-prim)
+    (primitiva ("+") suma-prim)
+    (primitiva ("-") resta-prim)
+    (primitiva ("*") multiplicacion-prim)
+    (primitiva ("/") division-prim)
+    (primitiva ("%") modulo-prim)
+    (primitiva ("<") menor-prim)
+    (primitiva (">") mayor-prim)
+    (primitiva ("<=") menor-igual-prim)
+    (primitiva (">=") mayor-igual-prim)
+    (primitiva ("==") igual-prim)
+    (primitiva ("!=") diferente-prim)
+    (primitiva ("&&") conjuncion-prim) ;and
+    (primitiva ("||") disyuncion-prim) ;or
+    (primitiva2 ("++") incremento-prim)
+    (primitiva2 ("--") decremento-prim)
     ; Secuenciación
     (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp)
     ))
@@ -110,6 +107,7 @@
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
       (string-exp (cadena) cadena)
+      (negacion-exp (boolean) (not (evaluar-expresion boolean ambiente)))
       (definicion-exp (identificadores valores) (list "var" identificadores valores))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa)
                        (let
@@ -129,16 +127,23 @@
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
       (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
-      (primitiva-aritmetica-exp (componente1 operando componente2)
-                                (let
-                                    (
-                                     (op1 (evaluar-expresion componente1 ambiente))
-                                     (op2 (evaluar-expresion componente2 ambiente))
-                                    )
-                                  (evaluar-primitiva operando op1 op2)
-                                 )
-                                )
-      (primitiva-booleana-exp (componente1 operando componente2) (list "booleana" componente1 operando componente2))
+      (primitiva-exp (componente1 operando componente2)
+                     (let
+                         (
+                          (op1 (evaluar-expresion componente1 ambiente))
+                          (op2 (evaluar-expresion componente2 ambiente))
+                         )
+                       (evaluar-primitiva operando op1 op2)
+                       )
+                     )
+      (primitiva2-exp (componente operando)
+                     (let
+                         (
+                          (op (evaluar-expresion componente ambiente))
+                         )
+                       (evaluar-primitiva2 operando op)
+                       )
+                     )
       (verdad-exp () #t)
       (falso-exp () #f)
       (secuenciacion-exp (lista-exp) "secuenciacion"))
@@ -187,21 +192,28 @@
 ;; Función que realiza las operaciones aritméticas
 (define evaluar-primitiva
   (lambda (op a b)
-    (cases primitiva-aritmetica op
+    (cases primitiva op
       (suma-prim () (+ a b))
       (resta-prim () (- a b))
       (multiplicacion-prim () (* a b))
       (division-prim () (/ a b))
       (modulo-prim () (modulo a b))
-      (incremento-prim () (+ a 1))
-      (decremento-prim () (- a 1))
       (menor-prim () (< a b))
       (mayor-prim () (> a b))
       (menor-igual-prim () (<= a b))
       (mayor-igual-prim () (>= a b))
       (igual-prim () (equal? a b))
       (diferente-prim () (not (equal? a b)))
-      )))  
+      (conjuncion-prim () (and a b))
+      (disyuncion-prim () (or a b))
+      )))
+
+(define evaluar-primitiva2
+  (lambda (op a)
+    (cases primitiva2 op
+      (incremento-prim () (+ a 1))
+      (decremento-prim () (- a 1))
+      )))
 
 ;; Ejecución del interpretador
 (interpretador)
@@ -215,3 +227,4 @@
 ;0x700FDA
 ;0o74563
 ;{var(x=1);if (x) {true} else {false}}
+;((4<3)&&((5==5)||(5!=6)) !!
