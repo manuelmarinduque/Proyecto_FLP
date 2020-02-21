@@ -226,12 +226,13 @@
 (interpretador)
 
 ;; Ejemplos
-;function funcionX (a, b, c) {if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
-;function funcionY (a, b, c) {var(x=6); if ([s || [f && g]]) {(5+(6+9))} else {"hola"} }
-;if ([[(a/2)>0] && [(a/2)==0]]) {var(x=2); "correcto"} else {"malo"; "peor"}
-;for (var(i=1); [i < 9]; (i ++ 1)) {var(a=2, b=5); "hola"}
+;function funcionX (a, b, c) {if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
+;function funcionY (a, b, c) {var(x=6); if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
+;if ((((a/2)>0) && ((a/2)==0))) {var(x=2); "correcto"} else {"malo"; "peor"}
+;for (var(i=1); (i < 9); (i ++ 1)) {var(a=2, b=5); "hola"}
 ;function-rec funcion-recursiva (x, y, z) {var(o=call-rec funcion-recursiva (1, 2, 3))}
 ;0x700FDA
 ;0o74563
 ;{var(x=1);if (x) {true} else {false}}
 ;((4<3)&&((5==5)||(5!=6)) !!
+;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
