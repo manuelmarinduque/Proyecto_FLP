@@ -52,8 +52,7 @@
     (primitiva ("||") disyuncion-prim) ;or
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
-    ; Secuenciación
-    (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp)
+    (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
     ))
 
 ;; Creación de los datatypes
@@ -107,15 +106,15 @@
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
       (string-exp (cadena) cadena)
-      (negacion-exp (boolean) (not (evaluar-expresion boolean ambiente)))
+      (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) "true") "false" "true"))
       (definicion-exp (identificadores valores) (list "var" identificadores valores))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa)
                        (let
                            (
                             (valor-condicion (evaluar-expresion condicion ambiente))
                             )
-                         (if (boolean? valor-condicion)
-                             (if valor-condicion
+                         (if (or (equal? valor-condicion "true") (equal? valor-condicion "false"))
+                             (if (equal? valor-condicion "true")
                                  (evaluar-expresion sentencia-verdad ambiente)
                                  (evaluar-expresion sentencia-falsa ambiente))
                              (eopl:error "no boolean")))
@@ -134,7 +133,7 @@
                           (op1 (evaluar-expresion componente1 ambiente))
                           (op2 (evaluar-expresion componente2 ambiente))
                          )
-                       (evaluar-primitiva operando op1 op2)
+                       (evaluar-primitiva operando op1 op2 ambiente)
                        )
                      )
       (primitiva2-exp (componente operando)
@@ -145,8 +144,8 @@
                        (evaluar-primitiva2 operando op)
                        )
                      )
-      (verdad-exp () #t)
-      (falso-exp () #f)
+      (verdad-exp () "true")
+      (falso-exp () "false")
       (secuenciacion-exp (lista-exp) "secuenciacion"))
     ))
 
@@ -197,21 +196,21 @@
 
 ;; Función que realiza las operaciones aritméticas y booleanas
 (define evaluar-primitiva
-  (lambda (op a b)
+  (lambda (op a b env)
     (cases primitiva op
       (suma-prim () (+ a b))
       (resta-prim () (- a b))
       (multiplicacion-prim () (* a b))
       (division-prim () (/ a b))
       (modulo-prim () (modulo a b))
-      (menor-prim () (< a b))
-      (mayor-prim () (> a b))
-      (menor-igual-prim () (<= a b))
-      (mayor-igual-prim () (>= a b))
-      (igual-prim () (equal? a b))
-      (diferente-prim () (not (equal? a b)))
-      (conjuncion-prim () (and a b))
-      (disyuncion-prim () (or a b))
+      (menor-prim () (if (< a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (mayor-prim () (if (> a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (menor-igual-prim () (if (<= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (mayor-igual-prim () (if (>= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (igual-prim () (if (equal? a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (diferente-prim () (if (not (equal? a b)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))) 
+      (conjuncion-prim () (if (and a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (disyuncion-prim () (if (or a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
       )))
 
 ;; Función que realizar el incremento y decremento en 1
