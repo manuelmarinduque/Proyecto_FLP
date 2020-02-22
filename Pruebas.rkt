@@ -222,8 +222,8 @@
       (mayor-igual-prim () (if (>= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
       (igual-prim () (if (equal? a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
       (diferente-prim () (if (not (equal? a b)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))) 
-      (conjuncion-prim () (if (and a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (disyuncion-prim () (if (or a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (conjuncion-prim () (if (and (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+      (disyuncion-prim () (if (or (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
       )))
 
 ;; Función que realizar el incremento y decremento en 1
@@ -246,5 +246,5 @@
 ;0x700FDA
 ;0o74563
 ;{var(x=1);if (x) {true} else {false}}
-;((4<3)&&((5==5)||(5!=6)) !!
+;((4<3)&&((5==5)||(5!=6)))
 ;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
