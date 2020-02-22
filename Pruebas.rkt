@@ -27,7 +27,7 @@
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list expresion ",") ")" "{" expresion "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
@@ -83,7 +83,7 @@
 
 ;; Definición del tipo de dato clousure
 (define-datatype procval procval?
-  (closure (list-ids (list-of symbol?))
+  (clousure (list-ids (list-of symbol?))
             (body expresion?)
             (ambiente ambiente?)))
 
@@ -100,14 +100,21 @@
 (define evaluar-expresion
   (lambda (exp ambiente)
     (cases expresion exp
+      
       (numero-exp (numero) numero)
       (flotante-exp (flotante) flotante)
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
+      (definicion-exp (identificadores valores) 
+        (let
+            (
+             (crear_lista_valores(map (lambda (x) (evaluar-expresion x ambiente)) valores))
+             )
+             (ambiente-extendido identificadores crear_lista_valores ambiente))
+        )
       (string-exp (cadena) cadena)
       (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) "true") "false" "true"))
-      (definicion-exp (identificadores valores) (list "var" identificadores valores))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa)
                        (let
                            (
@@ -122,7 +129,13 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombre-funcion parametros cuerpo) (list "function" nombre-funcion parametros cuerpo))
+      
+      (procedimiento-exp (nombre-funcion parametros cuerpo)
+                         (let
+                             (
+                              (crear-lista-identificadores (map (lambda (x) x)parametros))
+                              )
+                           (ambiente-extendido nombre-funcion (clousure crear-lista-identificadores cuerpo ambiente) ambiente)))
       (invocacion-proc-exp (nombre-funcion argumento) (list "call" nombre-funcion argumento))
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
       (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))

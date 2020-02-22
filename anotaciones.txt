@@ -1,0 +1,2 @@
+secuenciacion para el programa
+(expresion ("^i"(separated-list expresion ";")"^") programa-exp)
