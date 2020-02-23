@@ -178,6 +178,52 @@
   (lambda (cadena1 cadena2)
     (string-append (symbol->string cadena1) (symbol->string cadena2))))
 
+;;Funcion hexa-octal
+(define octal-list
+  (lambda (num)
+    (cond
+      [(equal? (substring num 0 2) "0o") (append '("0o")(map (lambda (x) (string->number(make-string 1 x )))(reverse(string->list(substring num 2 (length(string->list num))))))) ]
+      [(equal? (substring num 0 2) "0x") (append '("0x")(map (lambda (x) (if (eqv? x #\A) 10
+                                                                            (if (eqv? x #\B) 11
+                                                                                (if   (equal? x #\C) 12
+                                                                                      (if   (equal? x #\D) 13
+                                                                                            (if   (equal? x #\E) 14
+                                                                                                  (if   (equal? x #\F) 15(string->number(make-string 1 x )))))))))(reverse(string->list(substring num 2 (length(string->list num)))))))])))
+
+;; Función que hace la operacion de conversion
+(define list_index-aux
+          (lambda(num acc res base )
+            (cond
+              [(null? num)res]
+              [else (list_index-aux (cdr num)(+ 1 acc) (+ (*(expt base acc)(car num)) res) base)])))
+
+(define list_index
+          (lambda(num msg)
+           
+            (cond
+              [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
+              [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
+              [else (eopl:error "Numero no valido")])))
+
+;; Función generalizada
+(define conversion
+  ( lambda (num base msg)
+     (string-append
+      msg
+      (number->string (quotient num base) base)
+      (number->string (remainder num base) base))))
+
+(define conversion-aux
+  (lambda (lis-num)
+    (cond
+      [(equal? (car lis-num) "0o")(conversion (cadr lis-num) 8 "0o")]
+      [(equal? (car lis-num) "0x")(conversion (cadr lis-num) 16 "0x")])))
+
+;; Función que 
+(define hace_todo
+  (lambda (num)
+    (list_index (cdr (octal-list num))  (car (octal-list num)) )))
+
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
 (define apply-env
@@ -210,29 +256,63 @@
 ;; Función que realiza las operaciones aritméticas y booleanas
 (define evaluar-primitiva
   (lambda (op a b env)
-    (cases primitiva op
-      (suma-prim () (+ a b))
-      (resta-prim () (- a b))
-      (multiplicacion-prim () (* a b))
-      (division-prim () (/ a b))
-      (modulo-prim () (modulo a b))
-      (menor-prim () (if (< a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (mayor-prim () (if (> a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (menor-igual-prim () (if (<= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (mayor-igual-prim () (if (>= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (igual-prim () (if (equal? a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (diferente-prim () (if (not (equal? a b)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))) 
-      (conjuncion-prim () (if (and (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      (disyuncion-prim () (if (or (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-      )))
+    (let
+        (
+         (a (if (string? a)
+                (hace_todo a)
+                (a)))
+         (b (if (string? b)
+                (hace_todo b)
+                (b)))
+         )
+      (cases primitiva op
+        (suma-prim () (if (and (list? a) (list? b))
+                          (conversion-aux(list (car a ) (+(cadr a) (cadr b))))
+                          (+ a b)))
+        (resta-prim () (if (and (list? a) (list? b))
+                           (conversion-aux(list (car a ) (-(cadr a) (cadr b))))
+                           (- a b)))
+        (multiplicacion-prim () (if (and (list? a) (list? b))
+                                    (conversion-aux(list (car a ) (*(cadr a) (cadr b))))
+                                    (* a b)))
+        (division-prim () (if (and (list? a) (list? b))
+                              (conversion-aux(list (car a ) (*(cadr a) (cadr b))))
+                              (* a b)))
+        (modulo-prim () (modulo a b))
+        (menor-prim ()  (if (and (list? a) (list? b))
+                            (evaluar-primitiva op (cadr a) (cadr b) env)
+                            (if (< a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
+        (mayor-prim () (if (and (list? a) (list? b))
+                           (evaluar-primitiva op (cadr a) (cadr b) env)
+                           (if (> a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
+        (menor-igual-prim () (if (and (list? a) (list? b))
+                                 (evaluar-primitiva op (cadr a) (cadr b) env)
+                                 (if (<= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
+        (mayor-igual-prim () (if (and (list? a) (list? b))
+                                 (evaluar-primitiva op (cadr a) (cadr b) env)
+                                 (if (>= a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
+        (igual-prim () (if (and (list? a) (list? b))
+                           (evaluar-primitiva op (cadr a) (cadr b) env)
+                           (if (equal? a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
+        (diferente-prim () (if (and (list? a) (list? b))
+                               (evaluar-primitiva op (cadr a) (cadr b) env)(if (not (equal? a b)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))) 
+        (conjuncion-prim () (if (and (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+        (disyuncion-prim () (if (or (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+        ))))
 
 ;; Función que realizar el incremento y decremento en 1
 (define evaluar-primitiva2
   (lambda (op a)
-    (cases primitiva2 op
-      (incremento-prim () (+ a 1))
-      (decremento-prim () (- a 1))
-      )))
+    (let
+        (
+         (a (if (string? a)
+                (hace_todo a)
+                (a)))
+         )
+      (cases primitiva2 op
+        (incremento-prim () (+ a 1))
+        (decremento-prim () (- a 1))
+        ))))
 
 ;; Ejecución del interpretador
 (interpretador)
