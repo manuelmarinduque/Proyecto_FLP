@@ -78,7 +78,7 @@
   (lambda ()
     (ambiente-extendido
      '(x y z f)
-     (list 1 2 3 (clousure '(y) (numero-exp 8) (ambiente-vacio)))
+     (list 1 2 3 (clousure '(y) (primitiva-exp (identificador-exp 'y) (suma-prim)  (numero-exp 3)) (ambiente-vacio)))
      (ambiente-vacio))))
 
 ;; Definición del tipo de dato clousure
@@ -134,7 +134,23 @@
                          (clousure parametros cuerpo ambiente))
       
       (invocacion-proc-exp (nombre-funcion argumentos)
-                           (apply-env ambiente nombre-funcion ))
+                           
+                           (let
+                               (
+                                (funcion (apply-env ambiente nombre-funcion))
+                                (valores (map (lambda(x)(evaluar-expresion x ambiente))argumentos))
+                                )
+                             (if (procval? funcion)
+                                 (cases procval funcion
+                                   (clousure (lista-identificadores cuerpo ambiente-padre)
+                                             (if (= (length valores)(length lista-identificadores))
+                                                 (evaluar-expresion cuerpo (ambiente-extendido lista-identificadores valores ambiente-padre))
+                                                 (eopl:error "el número de argumentos que envia no corresponde con los entregados")
+                                                 )
+                                             ))
+                                 (eopl:error 'invocacion-proc-exp "no existe la funcion ~s" nombre-funcion))
+                            )
+                           )
       
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
       
