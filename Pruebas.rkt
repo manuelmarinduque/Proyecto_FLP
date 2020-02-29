@@ -23,7 +23,7 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
-    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" ";" expresion) definicion-exp)
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
@@ -53,6 +53,14 @@
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
     (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
+    (expresion ("val" identificador "=" expresion) asignacion-exp)
+    (type-exp ("int") int-type)
+    (type-exp ("float") float-type)
+    (type-exp ("hex") hexadecimal-type)
+    (type-exp ("oct") octal-type)
+    (type-exp ("string") string-type)
+    (type-exp ("bool") bool-type)
+    (type-exp ("proc" "(" (separated-list type-exp "*") "->" type-exp ")") proc-type)
     ))
 
 ;; Creación de los datatypes
@@ -100,18 +108,19 @@
 (define evaluar-expresion
   (lambda (exp ambiente)
     (cases expresion exp
-      
       (numero-exp (numero) numero)
       (flotante-exp (flotante) flotante)
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
-      (definicion-exp (identificadores valores) 
-        (let
+      (definicion-exp (identificadores valores cuerpo) 
+        (letrec
             (
              (crear_lista_valores(map (lambda (x) (evaluar-expresion x ambiente)) valores))
+             (nuevo-ambiente (ambiente-extendido identificadores crear_lista_valores ambiente))
              )
-             (ambiente-extendido identificadores crear_lista_valores ambiente))
+          (evaluar-expresion cuerpo nuevo-ambiente)
+             )
         )
       (string-exp (cadena) cadena)
       (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) "true") "false" "true"))
@@ -177,8 +186,9 @@
                      )
       (verdad-exp () "true")
       (falso-exp () "false")
-      (secuenciacion-exp (lista-exp) "secuenciacion"))
-    ))
+      (secuenciacion-exp (lista-exp) "secuenciacion")
+      (asignacion-exp (identificador nuevo-valor) "sasignacion")
+      )))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
