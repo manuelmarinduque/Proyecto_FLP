@@ -54,7 +54,7 @@
     (primitiva2 ("--") decremento-prim)
     (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
     (expresion ("val" identificador "=" expresion) asignacion-exp)
-    (expresion ("array" "[" (separated-list expresion ",") "]") estructura-exp)
+    (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
     (type-exp ("int") int-type)
     (type-exp ("float") float-type)
     (type-exp ("hex") hexadecimal-type)
@@ -189,7 +189,7 @@
       (falso-exp () "false")
       (secuenciacion-exp (lista-exp) "secuenciacion")
       (asignacion-exp (identificador nuevo-valor) "sasignacion")
-      (estructura-exp (lista-exp) lista-exp)
+      (estructura-exp (identificador lista-exp) lista-exp)
       )))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
