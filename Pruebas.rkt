@@ -117,8 +117,8 @@
       (definicion-exp (identificadores valores cuerpo) 
         (letrec
             (
-             (crear_lista_valores(map (lambda (x) (evaluar-expresion x ambiente)) valores))
-             (nuevo-ambiente (ambiente-extendido identificadores crear_lista_valores ambiente))
+             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))
+             (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
              )
           (evaluar-expresion cuerpo nuevo-ambiente)
              )
@@ -139,35 +139,28 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      
-      (procedimiento-exp (nombre-funcion parametros cuerpo)
+      (procedimiento-exp (nombrefuncion parametros cuerpo)
                          (clousure parametros cuerpo ambiente))
-      
-      (invocacion-proc-exp (nombre-funcion argumentos)
-                           
+      (invocacion-proc-exp (nombrefuncion argumentos)
                            (let
                                (
-                                (funcion (apply-env ambiente nombre-funcion))
-                                (valores (map (lambda(x)(evaluar-expresion x ambiente))argumentos))
+                                (funcion (apply-env ambiente nombrefuncion))
+                                (listaargumentos (map (lambda(x) (evaluar-expresion x ambiente)) argumentos))
                                 )
                              (if (procval? funcion)
                                  (cases procval funcion
-                                   (clousure (lista-identificadores cuerpo ambiente-padre)
-                                             (if (= (length valores)(length lista-identificadores))
-                                                 (evaluar-expresion cuerpo (ambiente-extendido lista-identificadores valores ambiente-padre))
-                                                 (eopl:error "el número de argumentos que envia no corresponde con los entregados")
+                                   (clousure (listaidentificadores cuerpo ambientepadre)
+                                             (if (= (length listaargumentos) (length listaidentificadores))
+                                                 (evaluar-expresion cuerpo (ambiente-extendido listaidentificadores listaargumentos ambientepadre))
+                                                 (eopl:error "El número de argumentos enviados no corresponden con los recibidos por la función ")
                                                  )
                                              ))
-                                 (eopl:error 'invocacion-proc-exp "no existe la funcion ~s" nombre-funcion))
+                                 (eopl:error 'invocacion-proc-exp "no existe la funcion ~s" nombrefuncion))
                             )
                            )
-      
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
-      
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))
-      
-      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
-      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
+      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
       (primitiva-exp (componente1 operando componente2)
                      (let
                          (
@@ -237,7 +230,7 @@
 
 ;; Función generalizada
 (define conversion
-  ( lambda (num base msg)
+  (lambda (num base msg)
      (string-append
       msg
       (number->string (quotient num base) base)
