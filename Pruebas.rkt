@@ -27,10 +27,10 @@
     (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
-    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
-    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
+    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
     (expresion ("!" expresion) negacion-exp)
@@ -392,28 +392,28 @@
 ;(e+(q+w))
 ;}
 
-;begin
+;{
 ;var(q=1);
 ;var(w=2);
 ;if (true) {true} else {false};
 ;function Sumar (a,b) {(a+b)};
 ;var(e=4);
 ;call Sumar(e,q)
-;end
+;}
 
-;begin
+;{
 ;var(q=1);
 ;var(w=2);
 ;if (true) {true} else {false};
 ;function Sumar (a,b) {(a+(b+(x+w)))};
 ;var(e=4);
 ;call Sumar(e,q)
-;end
+;}
 
-;begin
+;{
 ;var(q=1);
 ;var(w=2);
 ;if (true) {true} else {false};
-;function Sumar (a,b) {begin var(t= if (true) {5} else {6}, u=9); (a+(b+(t+u))) end};
+;function Sumar (a,b) {var(t= if (true) {5} else {6}, u=9); (a+(b+(t+u)))};
 ;call Sumar(1,2)
-;end
+;}
