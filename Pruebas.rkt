@@ -24,7 +24,7 @@
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
-    (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
+    (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
@@ -52,7 +52,7 @@
     (primitiva ("||") disyuncion-prim) ;or
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
-    (expresion ("begin" expresion (arbno ";" expresion) "end") secuenciacion-exp) ;Secuenciación
+    (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ;Secuenciación
     (expresion ("val" identificador "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
     (type-exp ("int") int-type)
@@ -371,26 +371,26 @@
 ;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
 ;var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
 
-;begin
+;{
 ;if (true) {true} else {false};
 ;var(y=3);
 ;(1+2);
 ;(1 - 2)
-;end
+;}
 
-;begin
+;{
 ;var(q=1);
 ;var(w=2);
 ;(q+w)
-;end
+;}
 
-;begin
+;{
 ;var(q=1);
 ;var(w=2);
 ;if (true) {true} else {false};
 ;var(e=4);
 ;(e+(q+w))
-;end
+;}
 
 ;begin
 ;var(q=1);
