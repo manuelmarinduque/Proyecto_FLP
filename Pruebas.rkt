@@ -55,6 +55,7 @@
     (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ;Secuenciación
     (expresion ("val" identificador "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
+    (expresion ("access" identificador "[" numero "]") acceso-exp)
     (type-exp ("int") int-type)
     (type-exp ("float") float-type)
     (type-exp ("hex") hexadecimal-type)
@@ -183,7 +184,8 @@
       (falso-exp () 'false)
       (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
       (asignacion-exp (identificador nuevo-valor) "asignacion")
-      (estructura-exp (identificador lista-exp) lista-exp)
+      (estructura-exp (identificador lista-exp) "estructura")
+      (acceso-exp (nombreestructura posicion) "acceso estructura")
       )))
 
 ;; Función que realiza la secuenciación
