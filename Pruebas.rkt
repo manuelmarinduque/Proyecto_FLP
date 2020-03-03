@@ -419,3 +419,11 @@
 ;function Sumar (a,b) {var(t= if (true) {5} else {6}, u=9); (a+(b+(t+u)))};
 ;call Sumar(1,2)
 ;}
+
+;{
+;var(q=7);
+;function Sumar(a,b){var(w=7); (a+(b+w))};
+;function Restar(a,b) {(a - (b - q))};
+;var(r=1, t=3, u=5);
+;(call Sumar(t,u) + call Restar(r,t))
+;}
