@@ -27,7 +27,7 @@
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}" ";" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
@@ -134,13 +134,15 @@
                              (if (equal? valor-condicion "true")
                                  (evaluar-expresion sentencia-verdad ambiente)
                                  (evaluar-expresion sentencia-falsa ambiente))
-                             (eopl:error "no boolean")))
+                             (eopl:error "No boolean")))
                            )
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombrefuncion parametros cuerpo)
-                         (clousure parametros cuerpo ambiente))
+      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
+                         (evaluar-expresion cuerpo2 (ambiente-extendido (list nombrefuncion)
+                                                                        (list (clousure parametros cuerpo ambiente))
+                                                                        ambiente)))
       (invocacion-proc-exp (nombrefuncion argumentos)
                            (let
                                (
@@ -155,7 +157,7 @@
                                                  (eopl:error "El número de argumentos enviados no corresponden con los recibidos por la función ")
                                                  )
                                              ))
-                                 (eopl:error 'invocacion-proc-exp "no existe la funcion ~s" nombrefuncion))
+                                 (eopl:error 'invocacion-proc-exp "No existe la funcion ~s" nombrefuncion))
                             )
                            )
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
@@ -328,17 +330,14 @@
   (lambda (op a)
     (let
         (
-
          (a (if (string? a)
                 (hace_todo a)
                 a))
-         
          )
       (cases primitiva2 op
         (incremento-prim () (if (list? a)
                                 (conversion-aux(list (car a)(+ (cadr a) 1))) 
-                                (+ a 1)))
-        
+                                (+ a 1)))        
         (decremento-prim () (if (list? a)
                                 (conversion-aux(list (car a)(- (cadr a) 1)))
                                 (- a 1)))
@@ -358,3 +357,4 @@
 ;{var(x=1);if (x) {true} else {false}}
 ;((4<3)&&((5==5)||(5!=6)))
 ;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
+;var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
