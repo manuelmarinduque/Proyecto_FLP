@@ -121,7 +121,7 @@
              (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
              )
           (evaluar-expresion cuerpo nuevo-ambiente)
-             )
+          )
         )
       (string-exp (cadena) cadena)
       (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) 'true) 'false 'true))
@@ -135,7 +135,7 @@
                                  (evaluar-expresion sentencia-verdad ambiente)
                                  (evaluar-expresion sentencia-falsa ambiente))
                              (eopl:error "No boolean")))
-                           )
+                       )
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
@@ -158,7 +158,7 @@
                                                  )
                                              ))
                                  (eopl:error 'invocacion-proc-exp "No existe la funcion ~s" nombrefuncion))
-                            )
+                             )
                            )
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
       (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
@@ -168,18 +168,18 @@
                          (
                           (op1 (evaluar-expresion componente1 ambiente))
                           (op2 (evaluar-expresion componente2 ambiente))
-                         )
+                          )
                        (evaluar-primitiva operando op1 op2 ambiente)
                        )
                      )
       (primitiva2-exp (componente operando)
-                     (let
-                         (
-                          (op (evaluar-expresion componente ambiente))
-                         )
-                       (evaluar-primitiva2 operando op)
-                       )
-                     )
+                      (let
+                          (
+                           (op (evaluar-expresion componente ambiente))
+                           )
+                        (evaluar-primitiva2 operando op)
+                        )
+                      )
       (verdad-exp () 'true)
       (falso-exp () 'false)
       (secuenciacion-exp (lista-exp) "secuenciacion")
@@ -209,34 +209,34 @@
     (cond
       [(equal? (substring num 0 2) "0o") (append '("0o")(map (lambda (x) (string->number(make-string 1 x )))(reverse(string->list(substring num 2 (length(string->list num))))))) ]
       [(equal? (substring num 0 2) "0x") (append '("0x")(map (lambda (x) (if (eqv? x #\A) 10
-                                                                            (if (eqv? x #\B) 11
-                                                                                (if   (equal? x #\C) 12
-                                                                                      (if   (equal? x #\D) 13
-                                                                                            (if   (equal? x #\E) 14
-                                                                                                  (if   (equal? x #\F) 15(string->number(make-string 1 x )))))))))(reverse(string->list(substring num 2 (length(string->list num)))))))])))
+                                                                             (if (eqv? x #\B) 11
+                                                                                 (if   (equal? x #\C) 12
+                                                                                       (if   (equal? x #\D) 13
+                                                                                             (if   (equal? x #\E) 14
+                                                                                                   (if   (equal? x #\F) 15(string->number(make-string 1 x )))))))))(reverse(string->list(substring num 2 (length(string->list num)))))))])))
 
 ;; Función que hace la operacion de conversion
 (define list_index-aux
-          (lambda(num acc res base )
-            (cond
-              [(null? num)res]
-              [else (list_index-aux (cdr num)(+ 1 acc) (+ (*(expt base acc)(car num)) res) base)])))
+  (lambda(num acc res base )
+    (cond
+      [(null? num)res]
+      [else (list_index-aux (cdr num)(+ 1 acc) (+ (*(expt base acc)(car num)) res) base)])))
 
 (define list_index
-          (lambda(num msg)
+  (lambda(num msg)
            
-            (cond
-              [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
-              [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
-              [else (eopl:error "Numero no valido")])))
+    (cond
+      [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
+      [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
+      [else (eopl:error "Numero no valido")])))
 
 ;; Función generalizada
 (define conversion
   (lambda (num base msg)
-     (string-append
-      msg
-      (number->string (quotient num base) base)
-      (number->string (remainder num base) base))))
+    (string-append
+     msg
+     (number->string (quotient num base) base)
+     (number->string (remainder num base) base))))
 
 (define conversion-aux
   (lambda (lis-num)
@@ -275,20 +275,16 @@
       ((pred (car ls)) 0)
       (else (let ((list-index-r (list-index pred (cdr ls))))
               (if (number? list-index-r)
-                (+ list-index-r 1)
-                #f))))))
+                  (+ list-index-r 1)
+                  #f))))))
 
 ;; Función que realiza las operaciones aritméticas y booleanas
 (define evaluar-primitiva
   (lambda (op a b env)
     (let
         (
-         (a (if (string? a)
-                (hace_todo a)
-                a))
-         (b (if (string? b)
-                (hace_todo b)
-                b))
+         (a (if (string? a) (hace_todo a) a))
+         (b (if (string? b) (hace_todo b) b))
          )
       (cases primitiva op
         (suma-prim () (if (and (list? a) (list? b))
