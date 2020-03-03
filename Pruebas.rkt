@@ -23,11 +23,15 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
+<<<<<<< HEAD
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")"";"expresion) definicion-exp)
+=======
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" ";" expresion) definicion-exp)
+>>>>>>> f2806123628a3d5d78a43df000f56200f69685f7
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}" ";" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
@@ -53,6 +57,15 @@
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
     (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
+    (expresion ("val" identificador "=" expresion) asignacion-exp)
+    (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
+    (type-exp ("int") int-type)
+    (type-exp ("float") float-type)
+    (type-exp ("hex") hexadecimal-type)
+    (type-exp ("oct") octal-type)
+    (type-exp ("string") string-type)
+    (type-exp ("bool") bool-type)
+    (type-exp ("proc" "(" (separated-list type-exp "*") "->" type-exp ")") proc-type)
     ))
 
 ;; Creación de los datatypes
@@ -100,7 +113,6 @@
 (define evaluar-expresion
   (lambda (exp ambiente)
     (cases expresion exp
-      
       (numero-exp (numero) numero)
       (flotante-exp (flotante) flotante)
       (octal-exp (octal) octal)
@@ -109,77 +121,82 @@
       (definicion-exp (identificadores valores cuerpo) 
         (letrec
             (
+<<<<<<< HEAD
              (crear_lista_valores(map (lambda (x) (evaluar-expresion x ambiente)) valores))
              (nuevo-ambiente (ambiente-extendido identificadores crear_lista_valores ambiente))
              )
              (evaluar-expresion cuerpo nuevo-ambiente))
+=======
+             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))
+             (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
+             )
+          (evaluar-expresion cuerpo nuevo-ambiente)
+          )
+>>>>>>> f2806123628a3d5d78a43df000f56200f69685f7
         )
       (string-exp (cadena) cadena)
-      (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) "true") "false" "true"))
+      (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) 'true) 'false 'true))
       (condicional-exp (condicion sentencia-verdad sentencia-falsa)
                        (let
                            (
                             (valor-condicion (evaluar-expresion condicion ambiente))
                             )
-                         (if (or (equal? valor-condicion "true") (equal? valor-condicion "false"))
-                             (if (equal? valor-condicion "true")
+                         (if (or (equal? valor-condicion 'true) (equal? valor-condicion 'false))
+                             (if (equal? valor-condicion 'true)
                                  (evaluar-expresion sentencia-verdad ambiente)
                                  (evaluar-expresion sentencia-falsa ambiente))
-                             (eopl:error "no boolean")))
-                           )
+                             (eopl:error "No boolean")))
+                       )
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      
-      (procedimiento-exp (nombre-funcion parametros cuerpo)
-                         (clousure parametros cuerpo ambiente))
-      
-      (invocacion-proc-exp (nombre-funcion argumentos)
-                           
+      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
+                         (evaluar-expresion cuerpo2 (ambiente-extendido (list nombrefuncion)
+                                                                        (list (clousure parametros cuerpo ambiente))
+                                                                        ambiente)))
+      (invocacion-proc-exp (nombrefuncion argumentos)
                            (let
                                (
-                                (funcion (apply-env ambiente nombre-funcion))
-                                (valores (map (lambda(x)(evaluar-expresion x ambiente))argumentos))
+                                (funcion (apply-env ambiente nombrefuncion))
+                                (listaargumentos (map (lambda(x) (evaluar-expresion x ambiente)) argumentos))
                                 )
                              (if (procval? funcion)
                                  (cases procval funcion
-                                   (clousure (lista-identificadores cuerpo ambiente-padre)
-                                             (if (= (length valores)(length lista-identificadores))
-                                                 (evaluar-expresion cuerpo (ambiente-extendido lista-identificadores valores ambiente-padre))
-                                                 (eopl:error "el número de argumentos que envia no corresponde con los entregados")
+                                   (clousure (listaidentificadores cuerpo ambientepadre)
+                                             (if (= (length listaargumentos) (length listaidentificadores))
+                                                 (evaluar-expresion cuerpo (ambiente-extendido listaidentificadores listaargumentos ambientepadre))
+                                                 (eopl:error "El número de argumentos enviados no corresponden con los recibidos por la función ")
                                                  )
                                              ))
-                                 (eopl:error 'invocacion-proc-exp "no existe la funcion ~s" nombre-funcion))
-                            )
+                                 (eopl:error 'invocacion-proc-exp "No existe la funcion ~s" nombrefuncion))
+                             )
                            )
-      
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
-      
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))
-      
-      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))
-      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
+      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
       (primitiva-exp (componente1 operando componente2)
                      (let
                          (
                           (op1 (evaluar-expresion componente1 ambiente))
                           (op2 (evaluar-expresion componente2 ambiente))
-                         )
+                          )
                        (evaluar-primitiva operando op1 op2 ambiente)
                        )
                      )
       (primitiva2-exp (componente operando)
-                     (let
-                         (
-                          (op (evaluar-expresion componente ambiente))
-                         )
-                       (evaluar-primitiva2 operando op)
-                       )
-                     )
-      (verdad-exp () "true")
-      (falso-exp () "false")
-      (secuenciacion-exp (lista-exp) "secuenciacion"))
-    ))
+                      (let
+                          (
+                           (op (evaluar-expresion componente ambiente))
+                           )
+                        (evaluar-primitiva2 operando op)
+                        )
+                      )
+      (verdad-exp () 'true)
+      (falso-exp () 'false)
+      (secuenciacion-exp (lista-exp) "secuenciacion")
+      (asignacion-exp (identificador nuevo-valor) "sasignacion")
+      (estructura-exp (identificador lista-exp) lista-exp)
+      )))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
@@ -203,34 +220,34 @@
     (cond
       [(equal? (substring num 0 2) "0o") (append '("0o")(map (lambda (x) (string->number(make-string 1 x )))(reverse(string->list(substring num 2 (length(string->list num))))))) ]
       [(equal? (substring num 0 2) "0x") (append '("0x")(map (lambda (x) (if (eqv? x #\A) 10
-                                                                            (if (eqv? x #\B) 11
-                                                                                (if   (equal? x #\C) 12
-                                                                                      (if   (equal? x #\D) 13
-                                                                                            (if   (equal? x #\E) 14
-                                                                                                  (if   (equal? x #\F) 15(string->number(make-string 1 x )))))))))(reverse(string->list(substring num 2 (length(string->list num)))))))])))
+                                                                             (if (eqv? x #\B) 11
+                                                                                 (if   (equal? x #\C) 12
+                                                                                       (if   (equal? x #\D) 13
+                                                                                             (if   (equal? x #\E) 14
+                                                                                                   (if   (equal? x #\F) 15(string->number(make-string 1 x )))))))))(reverse(string->list(substring num 2 (length(string->list num)))))))])))
 
 ;; Función que hace la operacion de conversion
 (define list_index-aux
-          (lambda(num acc res base )
-            (cond
-              [(null? num)res]
-              [else (list_index-aux (cdr num)(+ 1 acc) (+ (*(expt base acc)(car num)) res) base)])))
+  (lambda(num acc res base )
+    (cond
+      [(null? num)res]
+      [else (list_index-aux (cdr num)(+ 1 acc) (+ (*(expt base acc)(car num)) res) base)])))
 
 (define list_index
-          (lambda(num msg)
+  (lambda(num msg)
            
-            (cond
-              [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
-              [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
-              [else (eopl:error "Numero no valido")])))
+    (cond
+      [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
+      [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
+      [else (eopl:error "Numero no valido")])))
 
 ;; Función generalizada
 (define conversion
-  ( lambda (num base msg)
-     (string-append
-      msg
-      (number->string (quotient num base) base)
-      (number->string (remainder num base) base))))
+  (lambda (num base msg)
+    (string-append
+     msg
+     (number->string (quotient num base) base)
+     (number->string (remainder num base) base))))
 
 (define conversion-aux
   (lambda (lis-num)
@@ -269,20 +286,16 @@
       ((pred (car ls)) 0)
       (else (let ((list-index-r (list-index pred (cdr ls))))
               (if (number? list-index-r)
-                (+ list-index-r 1)
-                #f))))))
+                  (+ list-index-r 1)
+                  #f))))))
 
 ;; Función que realiza las operaciones aritméticas y booleanas
 (define evaluar-primitiva
   (lambda (op a b env)
     (let
         (
-         (a (if (string? a)
-                (hace_todo a)
-                a))
-         (b (if (string? b)
-                (hace_todo b)
-                b))
+         (a (if (string? a) (hace_todo a) a))
+         (b (if (string? b) (hace_todo b) b))
          )
       (cases primitiva op
         (suma-prim () (if (and (list? a) (list? b))
@@ -315,8 +328,8 @@
                            (if (equal? a b) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env))))
         (diferente-prim () (if (and (list? a) (list? b))
                                (evaluar-primitiva op (cadr a) (cadr b) env)(if (not (equal? a b)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))) 
-        (conjuncion-prim () (if (and (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
-        (disyuncion-prim () (if (or (equal? a "true") (equal? b "true")) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+        (conjuncion-prim () (if (and (equal? a 'true) (equal? b 'true)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
+        (disyuncion-prim () (if (or (equal? a 'true) (equal? b 'true)) (evaluar-expresion (verdad-exp) env) (evaluar-expresion (falso-exp) env)))
         ))))
 
 ;; Función que realizar el incremento y decremento en 1
@@ -324,17 +337,14 @@
   (lambda (op a)
     (let
         (
-
          (a (if (string? a)
                 (hace_todo a)
                 a))
-         
          )
       (cases primitiva2 op
         (incremento-prim () (if (list? a)
                                 (conversion-aux(list (car a)(+ (cadr a) 1))) 
-                                (+ a 1)))
-        
+                                (+ a 1)))        
         (decremento-prim () (if (list? a)
                                 (conversion-aux(list (car a)(- (cadr a) 1)))
                                 (- a 1)))
@@ -354,3 +364,4 @@
 ;{var(x=1);if (x) {true} else {false}}
 ;((4<3)&&((5==5)||(5!=6)))
 ;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
+;var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
