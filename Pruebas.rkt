@@ -80,7 +80,7 @@
 
 (define value?
   (lambda (x)
-    (or(number? x)(procval? x))))
+    (or(number? x)(procval? x)(symbol? x)(string? x))))
   
 ;; Definición del ambiente inicial
 (define ambiente-inicial
