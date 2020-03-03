@@ -23,7 +23,7 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
-    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" ";" expresion) definicion-exp)
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
@@ -52,7 +52,7 @@
     (primitiva ("||") disyuncion-prim) ;or
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
-    (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
+    (expresion ("begin" expresion (arbno ";" expresion) "end") secuenciacion-exp) ;Secuenciación
     (expresion ("val" identificador "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
     (type-exp ("int") int-type)
@@ -114,13 +114,12 @@
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
-      (definicion-exp (identificadores valores cuerpo) 
+      (definicion-exp (identificadores valores) 
         (letrec
             (
-             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))
-             (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
+             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))             
              )
-          (evaluar-expresion cuerpo nuevo-ambiente)
+          (ambiente-extendido identificadores listavalores ambiente)
           )
         )
       (string-exp (cadena) cadena)
@@ -182,10 +181,27 @@
                       )
       (verdad-exp () 'true)
       (falso-exp () 'false)
-      (secuenciacion-exp (lista-exp) "secuenciacion")
-      (asignacion-exp (identificador nuevo-valor) "sasignacion")
+      (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
+      (asignacion-exp (identificador nuevo-valor) "asignacion")
       (estructura-exp (identificador lista-exp) lista-exp)
       )))
+
+;; Función que realiza la secuenciación
+(define secuenciacion
+  (lambda (exp exps env)
+    (let
+        (
+         (acc (evaluar-expresion exp env))
+         )
+      (if (ambiente? acc)
+          (if (null? exps)
+              acc
+              (secuenciacion (car exps) (cdr exps) acc))
+          (if (null? exps)
+              acc
+              (secuenciacion (car exps) (cdr exps) env)))
+          )
+        ))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
@@ -354,3 +370,24 @@
 ;((4<3)&&((5==5)||(5!=6)))
 ;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
 ;var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
+
+;begin
+;if (true) {true} else {false};
+;var(y=3);
+;(1+2);
+;(1 - 2)
+;end
+
+;begin
+;var(q=1);
+;var(w=2);
+;(q+w)
+;end
+
+;begin
+;var(q=1);
+;var(w=2);
+;if (true) {true} else {false};
+;var(e=4);
+;(e+(q+w))
+;end
