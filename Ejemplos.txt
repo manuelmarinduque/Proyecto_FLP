@@ -1,0 +1,79 @@
+Ejemplos para probar en el interpretador:
+
+
+function funcionX (a, b, c) {if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
+
+function funcionY (a, b, c) {var(x=6); if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
+
+if ((((a/2)>0) && ((a/2)==0))) {var(x=2); "correcto"} else {"malo"; "peor"}
+
+for (var(i=1); (i < 9); (i ++ 1)) {var(a=2, b=5); "hola"}
+
+function-rec funcion-recursiva (x, y, z) {var(o=call-rec funcion-recursiva (1, 2, 3))}
+
+0x700FDA
+
+0o74563
+
+{var(x=1);if (x) {true} else {false}}
+
+((4<3)&&((5==5)||(5!=6)))
+
+if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
+
+var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
+
+{
+if (true) {true} else {false};
+var(y=3);
+(1+2);
+(1 - 2)
+}
+
+{
+var(q=1);
+var(w=2);
+(q+w)
+}
+
+{
+var(q=1);
+var(w=2);
+if (true) {true} else {false};
+var(e=4);
+(e+(q+w))
+}
+
+{
+var(q=1);
+var(w=2);
+if (true) {true} else {false};
+function Sumar (a,b) {(a+b)};
+var(e=4);
+call Sumar(e,q)
+}
+
+{
+var(q=1);
+var(w=2);
+if (true) {true} else {false};
+function Sumar (a,b) {(a+(b+(x+w)))};
+var(e=4);
+call Sumar(e,q)
+}
+
+{
+var(q=1);
+var(w=2);
+if (true) {true} else {false};
+function Sumar (a,b) {var(t= if (true) {5} else {6}, u=9); (a+(b+(t+u)))};
+call Sumar(1,2)
+}
+
+{
+var(q=7);
+function Sumar(a,b){var(w=7); (a+(b+w))};
+function Restar(a,b) {(a - (b - q))};
+var(r=1, t=3, u=5);
+(call Sumar(t,u) + call Restar(r,t))
+}
