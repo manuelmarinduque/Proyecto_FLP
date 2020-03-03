@@ -27,7 +27,7 @@
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}" ";" expresion) procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
@@ -138,10 +138,10 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
-                         (evaluar-expresion cuerpo2 (ambiente-extendido (list nombrefuncion)
-                                                                        (list (clousure parametros cuerpo ambiente))
-                                                                        ambiente)))
+      (procedimiento-exp (nombrefuncion parametros cuerpo)
+                         (ambiente-extendido (list nombrefuncion)
+                                             (list (clousure parametros cuerpo ambiente))
+                                             ambiente))
       (invocacion-proc-exp (nombrefuncion argumentos)
                            (let
                                (
@@ -390,4 +390,30 @@
 ;if (true) {true} else {false};
 ;var(e=4);
 ;(e+(q+w))
+;end
+
+;begin
+;var(q=1);
+;var(w=2);
+;if (true) {true} else {false};
+;function Sumar (a,b) {(a+b)};
+;var(e=4);
+;call Sumar(e,q)
+;end
+
+;begin
+;var(q=1);
+;var(w=2);
+;if (true) {true} else {false};
+;function Sumar (a,b) {(a+(b+(x+w)))};
+;var(e=4);
+;call Sumar(e,q)
+;end
+
+;begin
+;var(q=1);
+;var(w=2);
+;if (true) {true} else {false};
+;function Sumar (a,b) {begin var(t= if (true) {5} else {6}, u=9); (a+(b+(t+u))) end};
+;call Sumar(1,2)
 ;end
