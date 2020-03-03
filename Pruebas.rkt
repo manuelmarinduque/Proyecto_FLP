@@ -23,7 +23,11 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
+<<<<<<< HEAD
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")"";"expresion) definicion-exp)
+=======
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" ";" expresion) definicion-exp)
+>>>>>>> f2806123628a3d5d78a43df000f56200f69685f7
     (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
@@ -117,11 +121,18 @@
       (definicion-exp (identificadores valores cuerpo) 
         (letrec
             (
+<<<<<<< HEAD
+             (crear_lista_valores(map (lambda (x) (evaluar-expresion x ambiente)) valores))
+             (nuevo-ambiente (ambiente-extendido identificadores crear_lista_valores ambiente))
+             )
+             (evaluar-expresion cuerpo nuevo-ambiente))
+=======
              (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))
              (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
              )
           (evaluar-expresion cuerpo nuevo-ambiente)
           )
+>>>>>>> f2806123628a3d5d78a43df000f56200f69685f7
         )
       (string-exp (cadena) cadena)
       (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) 'true) 'false 'true))
