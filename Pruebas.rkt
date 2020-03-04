@@ -25,14 +25,14 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
-    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" ";" expresion) definicion-exp)
-    (expresion ("if" "(" expresion ")" "{" expresion "}" "else" "{" expresion "}") condicional-exp)
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
+    (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("length" "(" expresion ")") longitud-exp)
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
-    (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}" ";" expresion) procedimiento-exp)
+    (expresion ("function" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
-    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
-    (expresion ("function-rec" (arbno identificador "(" (separated-list identificador ",") ")" "{" expresion "}") ";" expresion) procedimiento-rec-exp)
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
+    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
     (expresion ("!" expresion) negacion-exp)
@@ -54,9 +54,10 @@
     (primitiva ("||") disyuncion-prim) ;or
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
-    (expresion ("{" (separated-list expresion ";") "}") secuenciacion-exp) ;Secuenciación
+    (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ;Secuenciación
     (expresion ("val" identificador "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
+    (expresion ("access" identificador "[" numero "]") acceso-exp)
     (type-exp ("int") int-type)
     (type-exp ("float") float-type)
     (type-exp ("hex") hexadecimal-type)
@@ -86,7 +87,7 @@
 
 (define value?
   (lambda (x)
-    (or(number? x)(procval? x))))
+    (or(number? x)(procval? x)(symbol? x)(string? x))))
   
 ;; Definición del ambiente inicial
 (define ambiente-inicial
@@ -120,13 +121,12 @@
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) (apply-env ambiente identificador))
-      (definicion-exp (identificadores valores cuerpo) 
+      (definicion-exp (identificadores valores) 
         (letrec
             (
-             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))
-             (nuevo-ambiente (ambiente-extendido identificadores listavalores ambiente))
+             (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))             
              )
-          (evaluar-expresion cuerpo nuevo-ambiente)
+          (ambiente-extendido identificadores listavalores ambiente)
           )
         )
       (string-exp (cadena) cadena)
@@ -145,10 +145,10 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
-                         (evaluar-expresion cuerpo2 (ambiente-extendido (list nombrefuncion)
-                                                                        (list (clousure parametros cuerpo ambiente))
-                                                                        ambiente)))
+      (procedimiento-exp (nombrefuncion parametros cuerpo)
+                         (ambiente-extendido (list nombrefuncion)
+                                             (list (clousure parametros cuerpo ambiente))
+                                             ambiente))
       (invocacion-proc-exp (nombrefuncion argumentos)
                            (let
                                (
@@ -180,13 +180,12 @@
                                                                      (ambiente-extendido (list variable) (list nuevo-valor) ambiente)))
                                               '()))
                           )
-                        lista-resultados
+                       lista-resultados
                       )
                      )
       
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado)
-                             (evaluar-expresion llamado
-                                   (ambiente-extendido-recursivo nombre-funcion parametros cuerpo ambiente))
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo)
+                             (ambiente-extendido-recursivo (list nombre-funcion) (list parametros) (list cuerpo) ambiente)
                              )
       
       (invocacion-proc-rec-exp (nombre-funcion argumentos)
@@ -216,17 +215,32 @@
                           (
                            (op (evaluar-expresion componente ambiente))
                            )
-                        (if (number? op)
-                            (evaluar-primitiva2 operando op)
-                            (evaluar-primitiva2-var operando op ambiente))
-                        )
-                      )
+                        (evaluar-primitiva2 operando op)
+                      ))
       (verdad-exp () 'true)
       (falso-exp () 'false)
-      (secuenciacion-exp (lista-exp) "secuenciacion")
-      (asignacion-exp (identificador nuevo-valor) "sasignacion")
-      (estructura-exp (identificador lista-exp) lista-exp)
+      (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
+      (asignacion-exp (identificador nuevo-valor) "asignacion")
+      (estructura-exp (identificador lista-exp) "estructura")
+      (acceso-exp (nombreestructura posicion) "acceso estructura")
       )))
+
+;; Función que realiza la secuenciación
+(define secuenciacion
+  (lambda (exp exps env)
+    (let
+        (
+         (acc (evaluar-expresion exp env))
+         )
+      (if (ambiente? acc)
+          (if (null? exps)
+              acc
+              (secuenciacion (car exps) (cdr exps) acc))
+          (if (null? exps)
+              acc
+              (secuenciacion (car exps) (cdr exps) env)))
+          )
+        ))
 
 ;; Función evalúar programa, que extrae el componente "expresion" de "un-programa"
 (define evaluar-programa
@@ -290,6 +304,14 @@
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
 
+;;;Funcion para dejar una lista de un solo nivel
+;(define planar
+;  (lambda (lista)
+;    (cond
+;      [(null? (car lista)) '()]
+;      [(not(list? (car lista)))(append (car lista)(planar (cdr lista)))]
+;      [else(append (planar (car lista))(planar (cadr lista)))]
+;      )))
 
 ;creación de un ambiente extendido para funciones recursivas
 (define ambiente-extendido-recursivo
@@ -408,19 +430,7 @@
                                 (- a 1)))
         ))))
 
-;;Función que realizar el incremento y decremento en 1 para variables
-(define evaluar-primitiva2-var
-  (lambda (op a ambiente)
-    (let
-        (
-         (valor (evaluar-expresion a ambiente))
-         )
-      (cases primitiva2 op
-        (incremento-prim ()(+ a 1))        
-        (decremento-prim ()(- a 1))
-        )
-      )
-    ))
+
 
 
 
@@ -433,7 +443,7 @@
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) identificador)
-      (definicion-exp (identificadores valores cuerpo) 
+      (definicion-exp (identificadores valores) 
         "definicion"
         )
       (string-exp (cadena) cadena)
@@ -444,7 +454,7 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
+      (procedimiento-exp (nombrefuncion parametros cuerpo)
                          "procedimiento")
       (invocacion-proc-exp (nombrefuncion argumentos)
                            "in"
@@ -452,7 +462,7 @@
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
                      "it"
                      )      
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado) (list "procedimiento" nombre-funcion parametros cuerpo))      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
       (primitiva-exp (componente1 operando componente2)
                      "prim"
@@ -462,23 +472,11 @@
                       )
       (verdad-exp () 'true)
       (falso-exp () 'false)
-      (secuenciacion-exp (lista-exp) "secuenciacion")
+      (secuenciacion-exp (expresion lista-exp) "secuenciacion")
       (asignacion-exp (identificador nuevo-valor) "sasignacion")
       (estructura-exp (identificador lista-exp) lista-exp)
+      (acceso-exp (nombreestructura posicion) "acceso estructura")
       )))
 ;function-rec hola(x) {  if ((x>0)) { (x * call-rec hola([x--]) ) } else {1}   } ; call-rec hola(2)
 ;; Ejecución del interpretador
 (interpretador)
-
-;; Ejemplos
-;function funcionX (a, b, c) {if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
-;function funcionY (a, b, c) {var(x=6); if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
-;if ((((a/2)>0) && ((a/2)==0))) {var(x=2); "correcto"} else {"malo"; "peor"}
-;for (var(i=1); (i < 9); (i ++ 1)) {var(a=2, b=5); "hola"}
-;function-rec funcion-recursiva (x, y, z) {var(o=call-rec funcion-recursiva (1, 2, 3))}
-;0x700FDA
-;0o74563
-;{var(x=1);if (x) {true} else {false}}
-;((4<3)&&((5==5)||(5!=6)))
-;if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
-;var(q=7, w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
