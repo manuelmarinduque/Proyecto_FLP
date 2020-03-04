@@ -14,8 +14,6 @@
                        (arbno (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "A" "B" "C" "D" "E" "F"))) string)   
     ))
 
-
-
 ;; Especificación gramatical (lhs)
 (define especificacion-gramatical
   '((programa (expresion) un-programa)
@@ -55,7 +53,7 @@
     (primitiva2 ("++") incremento-prim)
     (primitiva2 ("--") decremento-prim)
     (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ;Secuenciación
-    (expresion ("val" identificador "=" expresion) asignacion-exp)
+    (expresion ("val" expresion "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list expresion ";") "}") estructura-exp)
     (expresion ("access" identificador "[" numero "]") acceso-exp)
     (type-exp ("int") int-type)
@@ -183,11 +181,9 @@
                        lista-resultados
                       )
                      )
-      
       (procedimiento-rec-exp (nombre-funcion parametros cuerpo)
                              (ambiente-extendido-recursivo (list nombre-funcion) (list parametros) (list cuerpo) ambiente)
-                             )
-      
+                             )      
       (invocacion-proc-rec-exp (nombre-funcion argumentos)
                                (let
                                    (
@@ -199,8 +195,6 @@
                                      (eopl:error 'eval-expression "No se encontro el procedimiento recursivo ~s" procedimiento))
                                 )
                                )
-
-      
       (primitiva-exp (componente1 operando componente2)
                      (let
                          (
@@ -279,7 +273,6 @@
 
 (define list_index
   (lambda(num msg)
-           
     (cond
       [(eqv? msg "0o" ) (list msg (list_index-aux num 0 0 8))]
       [(eqv? msg "0x" ) (list msg (list_index-aux num 0 0 16))]
@@ -304,7 +297,7 @@
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
 
-;;;Funcion para dejar una lista de un solo nivel
+;;; Funcion para dejar una lista de un solo nivel
 ;(define planar
 ;  (lambda (lista)
 ;    (cond
@@ -313,12 +306,11 @@
 ;      [else(append (planar (car lista))(planar (cadr lista)))]
 ;      )))
 
-;creación de un ambiente extendido para funciones recursivas
+;; Creación de un ambiente extendido para funciones recursivas
 (define ambiente-extendido-recursivo
   (lambda (nombre-procedimiento parametros cuerpo ambiente-padre)
     (ambiente-recursivo-extendido
      nombre-procedimiento parametros cuerpo ambiente-padre)))
-
 
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
@@ -344,14 +336,13 @@
                                              (apply-env ambiente-padre sym)))
                                        ))))
 
-;apply-procedure: evalua el cuerpo de un procedimientos en el ambiente extendido correspondiente
-;;tomado del interpretador realizado en clases
+;; Función que evalúa el cuerpo de un procedimiento en el ambiente extendido correspondiente
+; (Tomado del interpretador_recursivo del curso)
 (define apply-procedure
   (lambda (proc args)
     (cases procval proc
       (clousure (ids body env)
                (evaluar-expresion body (ambiente-extendido ids args env))))))
-
 
 ;; Función para encontrar la posición de un identificador dentro de un ambiente
 ; (Tomado del interpretador_simple del curso)
@@ -430,10 +421,6 @@
                                 (- a 1)))
         ))))
 
-
-
-
-
 ;;; Evaluar-exp2
 (define evaluar-expresion2
   (lambda (exp ambiente)
@@ -477,6 +464,6 @@
       (estructura-exp (identificador lista-exp) lista-exp)
       (acceso-exp (nombreestructura posicion) "acceso estructura")
       )))
-;function-rec hola(x) {  if ((x>0)) { (x * call-rec hola([x--]) ) } else {1}   } ; call-rec hola(2)
+
 ;; Ejecución del interpretador
 (interpretador)
