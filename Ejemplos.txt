@@ -77,3 +77,28 @@ function Restar(a,b) {(a - (b - q))};
 var(r=1, t=3, u=5);
 (call Sumar(t,u) + call Restar(r,t))
 }
+
+
+{ 
+function-rec hola(x)
+{ if ((x > 0))
+{(x * call-rec hola(
+[x --]
+)
+)
+}
+else
+{1}
+}
+; 
+call-rec hola(6) 
+}
+
+
+{
+var(x=0); 
+for (x; (x < 10); [x ++])
+{
+x
+}
+}

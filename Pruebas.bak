@@ -31,8 +31,13 @@
     (expresion ("concat" "(" expresion expresion ")") concatenacion-exp)
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
+<<<<<<< HEAD
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
+    (expresion ("function-rec" (arbno identificador "(" (separated-list identificador ",") ")" "{" expresion "}") ";" expresion) procedimiento-rec-exp)
+=======
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" expresion) procedimiento-rec-exp)
+>>>>>>> 61167d9f18f69b1dc2ba96e0d7bc4f5c35d2a1cd
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
     (expresion ("!" expresion) negacion-exp)
@@ -180,12 +185,13 @@
                                                                      (ambiente-extendido (list variable) (list nuevo-valor) ambiente)))
                                               '()))
                           )
-                       lista-resultados
+                        lista-resultados
                       )
                      )
       
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo)
-                             (ambiente-extendido-recursivo (list nombre-funcion) (list parametros) (list cuerpo) ambiente)
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado)
+                             (evaluar-expresion llamado
+                                   (ambiente-extendido-recursivo nombre-funcion parametros cuerpo ambiente))
                              )
       
       (invocacion-proc-rec-exp (nombre-funcion argumentos)
@@ -215,8 +221,11 @@
                           (
                            (op (evaluar-expresion componente ambiente))
                            )
-                        (evaluar-primitiva2 operando op)
-                      ))
+                        (if (number? op)
+                            (evaluar-primitiva2 operando op)
+                            (evaluar-primitiva2-var operando op ambiente))
+                        )
+                      )
       (verdad-exp () 'true)
       (falso-exp () 'false)
       (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
@@ -304,14 +313,6 @@
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
 
-;;;Funcion para dejar una lista de un solo nivel
-;(define planar
-;  (lambda (lista)
-;    (cond
-;      [(null? (car lista)) '()]
-;      [(not(list? (car lista)))(append (car lista)(planar (cdr lista)))]
-;      [else(append (planar (car lista))(planar (cadr lista)))]
-;      )))
 
 ;creación de un ambiente extendido para funciones recursivas
 (define ambiente-extendido-recursivo
@@ -430,7 +431,19 @@
                                 (- a 1)))
         ))))
 
-
+;;Función que realizar el incremento y decremento en 1 para variables
+(define evaluar-primitiva2-var
+  (lambda (op a ambiente)
+    (let
+        (
+         (valor (evaluar-expresion a ambiente))
+         )
+      (cases primitiva2 op
+        (incremento-prim ()(+ a 1))        
+        (decremento-prim ()(- a 1))
+        )
+      )
+    ))
 
 
 
@@ -443,7 +456,7 @@
       (octal-exp (octal) octal)
       (hexadecimal-exp (hexadecimal) hexadecimal)
       (identificador-exp (identificador) identificador)
-      (definicion-exp (identificadores valores) 
+      (definicion-exp (identificadores valores cuerpo) 
         "definicion"
         )
       (string-exp (cadena) cadena)
@@ -454,7 +467,7 @@
       (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
       (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
                                                           (evaluar-expresion cadena2 ambiente)))
-      (procedimiento-exp (nombrefuncion parametros cuerpo)
+      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
                          "procedimiento")
       (invocacion-proc-exp (nombrefuncion argumentos)
                            "in"
@@ -462,7 +475,7 @@
       (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
                      "it"
                      )      
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado) (list "procedimiento" nombre-funcion parametros cuerpo))      
       (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
       (primitiva-exp (componente1 operando componente2)
                      "prim"
@@ -472,10 +485,9 @@
                       )
       (verdad-exp () 'true)
       (falso-exp () 'false)
-      (secuenciacion-exp (expresion lista-exp) "secuenciacion")
+      (secuenciacion-exp (lista-exp) "secuenciacion")
       (asignacion-exp (identificador nuevo-valor) "sasignacion")
       (estructura-exp (identificador lista-exp) lista-exp)
-      (acceso-exp (nombreestructura posicion) "acceso estructura")
       )))
 ;function-rec hola(x) {  if ((x>0)) { (x * call-rec hola([x--]) ) } else {1}   } ; call-rec hola(2)
 ;; Ejecución del interpretador
