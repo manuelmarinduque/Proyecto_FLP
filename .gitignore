@@ -12,6 +12,8 @@
 \#*.rkt#
 \#*.rkt#*#
 
+Pruebas.bak
+
 # Compiled racket bytecode
 compiled/
 *.zo
