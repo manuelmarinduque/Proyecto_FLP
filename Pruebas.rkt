@@ -14,6 +14,8 @@
                        (arbno (or "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "A" "B" "C" "D" "E" "F"))) string)   
     ))
 
+
+
 ;; Especificación gramatical (lhs)
 (define especificacion-gramatical
   '((programa (expresion) un-programa)
@@ -30,7 +32,7 @@
     (expresion ("function" identificador "(" (separated-list identificador ",") ")" "{" expresion "}" ";" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
     (expresion ("for" "(" expresion ";" expresion ";" expresion ")" "{" expresion "}") iteracion-exp)
-    (expresion ("function-rec" identificador "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-rec-exp)
+    (expresion ("function-rec" (arbno identificador "(" (separated-list identificador ",") ")" "{" expresion "}") ";" expresion) procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
     (expresion ("!" expresion) negacion-exp)
@@ -76,7 +78,11 @@
   (ambiente-extendido
    (id (list-of symbol?))
    (values (list-of value?))
-   (amb ambiente?)))
+   (amb ambiente?))
+  (ambiente-recursivo-extendido (nombre-procedimiento (list-of symbol?))
+                                   (parametros (list-of (list-of symbol?)))
+                                   (cuerpo (list-of expresion?))
+                                   (ambinte ambiente?)))
 
 (define value?
   (lambda (x)
@@ -160,9 +166,42 @@
                                  (eopl:error 'invocacion-proc-exp "No existe la funcion ~s" nombrefuncion))
                              )
                            )
-      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) (list "for" inicial-exp condicion-for incrementador cuerpo))
-      (procedimiento-rec-exp (nombre-funcion parametros cuerpo) (list "procedimiento" nombre-funcion parametros cuerpo))      
-      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
+      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
+                     (letrec
+                         (
+                          (variable (evaluar-expresion2 inicial-exp ambiente))
+                          (valor (evaluar-expresion inicial-exp ambiente))
+                          (condicion (evaluar-expresion condicion-for ambiente))
+                          (nuevo-valor (evaluar-expresion incrementador ambiente))
+                          (cuerpo-evaluado (evaluar-expresion cuerpo ambiente))
+                          (lista-resultados (if(equal? condicion 'true)
+                                              (list cuerpo-evaluado (evaluar-expresion
+                                                                     (iteracion-exp inicial-exp condicion-for incrementador cuerpo)
+                                                                     (ambiente-extendido (list variable) (list nuevo-valor) ambiente)))
+                                              '()))
+                          )
+                        lista-resultados
+                      )
+                     )
+      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado)
+                             (evaluar-expresion llamado
+                                   (ambiente-extendido-recursivo nombre-funcion parametros cuerpo ambiente))
+                             )
+      
+      (invocacion-proc-rec-exp (nombre-funcion argumentos)
+                               (let
+                                   (
+                                    (procedimiento (apply-env ambiente nombre-funcion))
+                                    (argumentos-evaluados (map (lambda (x) (evaluar-expresion x ambiente)) argumentos))
+                                    )
+                                 (if (procval? procedimiento)
+                                     (apply-procedure procedimiento argumentos-evaluados)
+                                     (eopl:error 'eval-expression "No se encontro el procedimiento recursivo ~s" procedimiento))
+                                )
+                               )
+
+      
       (primitiva-exp (componente1 operando componente2)
                      (let
                          (
@@ -177,7 +216,9 @@
                           (
                            (op (evaluar-expresion componente ambiente))
                            )
-                        (evaluar-primitiva2 operando op)
+                        (if (number? op)
+                            (evaluar-primitiva2 operando op)
+                            (evaluar-primitiva2-var operando op ambiente))
                         )
                       )
       (verdad-exp () 'true)
@@ -249,6 +290,14 @@
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
 
+
+;creación de un ambiente extendido para funciones recursivas
+(define ambiente-extendido-recursivo
+  (lambda (nombre-procedimiento parametros cuerpo ambiente-padre)
+    (ambiente-recursivo-extendido
+     nombre-procedimiento parametros cuerpo ambiente-padre)))
+
+
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
 (define apply-env
@@ -260,7 +309,27 @@
                           (let ((pos (list-find-position sym syms)))
                             (if (number? pos)
                                 (list-ref vals pos)
-                                (apply-env env sym)))))))
+                                (apply-env env sym))))
+      (ambiente-recursivo-extendido (nombre-procedimiento parametros cuerpo ambiente-padre)
+                                       (let
+                                           (
+                                            (pos (list-find-position sym nombre-procedimiento))
+                                            )
+                                         (if (number? pos)
+                                             (clousure (list-ref parametros pos)
+                                                      (list-ref cuerpo pos)
+                                                      env)
+                                             (apply-env ambiente-padre sym)))
+                                       ))))
+
+;apply-procedure: evalua el cuerpo de un procedimientos en el ambiente extendido correspondiente
+;;tomado del interpretador realizado en clases
+(define apply-procedure
+  (lambda (proc args)
+    (cases procval proc
+      (clousure (ids body env)
+               (evaluar-expresion body (ambiente-extendido ids args env))))))
+
 
 ;; Función para encontrar la posición de un identificador dentro de un ambiente
 ; (Tomado del interpretador_simple del curso)
@@ -339,6 +408,65 @@
                                 (- a 1)))
         ))))
 
+;;Función que realizar el incremento y decremento en 1 para variables
+(define evaluar-primitiva2-var
+  (lambda (op a ambiente)
+    (let
+        (
+         (valor (evaluar-expresion a ambiente))
+         )
+      (cases primitiva2 op
+        (incremento-prim ()(+ a 1))        
+        (decremento-prim ()(- a 1))
+        )
+      )
+    ))
+
+
+
+;;; Evaluar-exp2
+(define evaluar-expresion2
+  (lambda (exp ambiente)
+    (cases expresion exp
+      (numero-exp (numero) numero)
+      (flotante-exp (flotante) flotante)
+      (octal-exp (octal) octal)
+      (hexadecimal-exp (hexadecimal) hexadecimal)
+      (identificador-exp (identificador) identificador)
+      (definicion-exp (identificadores valores cuerpo) 
+        "definicion"
+        )
+      (string-exp (cadena) cadena)
+      (negacion-exp (boolean) (if (equal? (evaluar-expresion boolean ambiente) 'true) 'false 'true))
+      (condicional-exp (condicion sentencia-verdad sentencia-falsa)
+                       "condicion"
+                       )
+      (longitud-exp (cadena) (longitud-cadena (evaluar-expresion cadena ambiente)))
+      (concatenacion-exp (cadena1 cadena2) (concatenacion (evaluar-expresion cadena1 ambiente)
+                                                          (evaluar-expresion cadena2 ambiente)))
+      (procedimiento-exp (nombrefuncion parametros cuerpo cuerpo2)
+                         "procedimiento")
+      (invocacion-proc-exp (nombrefuncion argumentos)
+                           "in"
+                           )
+      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
+                     "it"
+                     )      
+      (procedimiento-rec-exp (nombre-funcion parametros cuerpo llamado) (list "procedimiento" nombre-funcion parametros cuerpo))      
+      (invocacion-proc-rec-exp (nombre-funcion argumento) (list "llamado" nombre-funcion argumento))      
+      (primitiva-exp (componente1 operando componente2)
+                     "prim"
+                     )
+      (primitiva2-exp (componente operando)
+                      "prim"
+                      )
+      (verdad-exp () 'true)
+      (falso-exp () 'false)
+      (secuenciacion-exp (lista-exp) "secuenciacion")
+      (asignacion-exp (identificador nuevo-valor) "sasignacion")
+      (estructura-exp (identificador lista-exp) lista-exp)
+      )))
+;function-rec hola(x) {  if ((x>0)) { (x * call-rec hola([x--]) ) } else {1}   } ; call-rec hola(2)
 ;; Ejecución del interpretador
 (interpretador)
 
