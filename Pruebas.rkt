@@ -329,10 +329,31 @@
 ;      )))
 
 ;; Creación de un ambiente extendido para funciones recursivas
+;(define ambiente-extendido-recursivo
+ ; (lambda (nombre-procedimiento parametros cuerpo ambiente-padre)
+  ;  (ambiente-recursivo-extendido
+   ;  nombre-procedimiento parametros cuerpo ambiente-padre)))
+
 (define ambiente-extendido-recursivo
   (lambda (nombre-procedimiento parametros cuerpo ambiente-padre)
-    (ambiente-recursivo-extendido
-     nombre-procedimiento parametros cuerpo ambiente-padre)))
+    (let ((tamaño (length nombre-procedimiento)))
+      (let ((vector (make-vector tamaño)))
+        (let ((ambiente (ambiente-recursivo-extendido nombre-procedimiento vector ambiente-padre)))
+          (for-each
+            (lambda (posicion identificadores cuerpos)
+              (vector-set! vector posicion (clousure identificadores cuerpos ambiente)))
+            (iota tamaño) parametros cuerpo)
+          ambiente)))))
+
+;iota: number -> list
+;función que retorna una lista de los números desde 0 hasta end
+;;;Tomado del interretador visto en clase
+(define iota
+  (lambda (end)
+    (let loop ((next 0))
+      (if (>= next end) '()
+        (cons next (loop (+ 1 next)))))))
+
 
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
