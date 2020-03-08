@@ -712,7 +712,7 @@
 (define type-of-primitive-int
   (lambda (prim)
     (cases primitiva prim
-      (suma-prim () (proc-type (or (list int-type int-type) (list float-type float-type)) (or int-type float-type)))
+      (suma-prim () (proc-type (list int-type int-type) int-type))
       (resta-prim () (proc-type (list int-type int-type) int-type))
       (multiplicacion-prim () (proc-type (list int-type int-type) int-type))
       (division-prim () (proc-type (list int-type int-type) (or int-type float-type)))
@@ -731,7 +731,7 @@
 (define type-of-primitive-float
   (lambda (prim)
     (cases primitiva prim
-      (suma-prim () (proc-type (or (list float-type float-type) (list float-type float-type)) (or float-type float-type)))
+      (suma-prim () (proc-type (list float-type float-type) float-type))
       (resta-prim () (proc-type (list float-type float-type) float-type))
       (multiplicacion-prim () (proc-type (list float-type float-type) float-type))
       (division-prim () (proc-type (list float-type float-type) (or int-type float-type)))
@@ -750,7 +750,7 @@
 (define type-of-primitive-hexadecimal
   (lambda (prim)
     (cases primitiva prim
-      (suma-prim () (proc-type (or (list hexadecimal-type hexadecimal-type) (list hexadecimal-type hexadecimal-type)) (or hexadecimal-type hexadecimal-type)))
+      (suma-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
       (resta-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
       (multiplicacion-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
       (division-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
@@ -769,7 +769,7 @@
 (define type-of-primitive-octal
   (lambda (prim)
     (cases primitiva prim
-      (suma-prim () (proc-type (or (list octal-type octal-type) (list octal-type octal-type)) (or octal-type octal-type)))
+      (suma-prim () (proc-type (list octal-type octal-type) octal-type))
       (resta-prim () (proc-type (list octal-type octal-type) octal-type))
       (multiplicacion-prim () (proc-type (list octal-type octal-type) octal-type))
       (division-prim () (proc-type (list octal-type octal-type) octal-type))
