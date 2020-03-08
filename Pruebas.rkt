@@ -220,14 +220,17 @@
       ;      (asignacion-exp (identificador nuevo-valor) "asignacion")
       (estructura-exp (nombreestructura listatipos lista-exp valores)
                       (ambiente-extendido (list nombreestructura)
-                                          (list lista-exp valores)
+                                          (list valores lista-exp)
                                           ambiente))
       (acceso-exp (nombreestructura posicion)
-                  (let
+                  (letrec
                       (
                        (estructura (apply-env ambiente nombreestructura))
+                       (estructura-eval (map (lambda(x) (evaluar-expresion x ambiente)) estructura))
                        )
-                    estructura
+                    (if (>= posicion (length estructura-eval))
+                        (eopl:error "El índice está fuera de rango")
+                        (list-ref estructura-eval posicion))
                     ))
       )))
 
