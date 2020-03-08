@@ -77,13 +77,8 @@
 ;; Definición del tipo de dato ambiente
 (define-datatype ambiente ambiente?
   (ambiente-vacio)
-  (ambiente-extendido
-   (id (list-of symbol?))
-   (values (list-of value?))
-   (amb ambiente?))
   (ambiente-recursivo-extendido (nombre-procedimiento (list-of symbol?))
-                                (parametros (list-of (list-of symbol?)))
-                                (cuerpo (list-of expresion?))
+                                (vec vector?)
                                 (ambiente ambiente?)))
 
 (define value?
@@ -217,7 +212,13 @@
                         (evaluar-primitiva2 operando op)
                         ))
       (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
-      (asignacion-exp (identificador nuevo-valor) "asignacion")
+      (asignacion-exp (identificador nuevo-valor)
+                      (begin
+                        (setref!
+                         (apply-env-ref ambiente (evaluar-expresion2 identificador ambiente))
+                         (evaluar-expresion nuevo-valor ambiente))
+                        1)
+                      )
       (estructura-exp (nombreestructura listatipos lista-exp valores)
                       (ambiente-extendido (list nombreestructura)
                                           (list valores lista-exp)
@@ -335,27 +336,22 @@
 
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
+;función que busca un símbolo en un ambiente
 (define apply-env
+  (lambda (env sym)
+    (deref (apply-env-ref env sym))))
+     ;(apply-env-ref env sym)))
+    ;env))
+(define apply-env-ref
   (lambda (env sym)
     (cases ambiente env
       (ambiente-vacio ()
-                      (eopl:error 'apply-env "No se encuentra ~s" sym))
-      (ambiente-extendido (syms vals env)
-                          (let ((pos (list-find-position sym syms)))
-                            (if (number? pos)
-                                (list-ref vals pos)
-                                (apply-env env sym))))
-      (ambiente-recursivo-extendido (nombre-procedimiento parametros cuerpo ambiente-padre)
-                                    (let
-                                        (
-                                         (pos (list-find-position sym nombre-procedimiento))
-                                         )
+                      (eopl:error 'apply-env-ref "No binding for ~s" sym))
+      (ambiente-recursivo-extendido (syms vals env)
+                                    (let ((pos (rib-find-position sym syms)))
                                       (if (number? pos)
-                                          (clousure (list-ref parametros pos)
-                                                    (list-ref cuerpo pos)
-                                                    env)
-                                          (apply-env ambiente-padre sym)))
-                                    ))))
+                                          (a-ref pos vals)
+                                          (apply-env-ref env sym)))))))
 
 ;; Función que evalúa el cuerpo de un procedimiento en el ambiente extendido correspondiente
 ; (Tomado del interpretador_recursivo del curso)
@@ -828,6 +824,48 @@
       (let ((result-type
              (evaluar-tipo-expresion body (extended-tenv nombrefuncion ids arg-types tenv))))
         (proc-type arg-types result-type)))))
+
+;;;;Referencias tomado del interpretados del curso
+(define setref!
+  (lambda (referencia valor)
+    (primitive-setref! referencia valor)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val)))))
+
+(define deref
+  (lambda (referencia)
+    (primitive-deref referencia)))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos)))))
+
+(define-datatype reference reference?
+  (a-ref (position integer?)
+         (vec vector?)))
+
+;extend-env: <list-of symbols> <list-of numbers> enviroment -> enviroment
+;función que crea un ambiente extendido
+;Tomado del interpretador de clases
+(define ambiente-extendido
+  (lambda (syms vals env)
+    (ambiente-recursivo-extendido syms (list->vector vals) env)))
+
+;Funciones Auxiliares(tomado del interpretador de clases)
+
+; funciones auxiliares para encontrar la posición de un símbolo
+; en la lista de símbolos de un ambiente
+
+(define rib-find-position 
+  (lambda (sym los)
+    (list-find-position sym los)))
+
 
 ;; Ejecución del interpretador
 ;(interpretador)
