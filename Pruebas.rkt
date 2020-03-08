@@ -314,7 +314,7 @@
       [(equal? (car lis-num) "0o")(conversion (cadr lis-num) 8 "0o")]
       [(equal? (car lis-num) "0x")(conversion (cadr lis-num) 16 "0x")])))
 
-;; Función que
+;; Función que realiza todos los procesos de hexadecimales y octales
 (define hace_todo
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
@@ -336,12 +336,9 @@
 
 ;; Función que busca un identificador dentro de un ambiente:
 ; (Tomado del interpretador_simple del curso)
-;función que busca un símbolo en un ambiente
 (define apply-env
   (lambda (env sym)
     (deref (apply-env-ref env sym))))
-     ;(apply-env-ref env sym)))
-    ;env))
 (define apply-env-ref
   (lambda (env sym)
     (cases ambiente env
@@ -825,7 +822,7 @@
              (evaluar-tipo-expresion body (extended-tenv nombrefuncion ids arg-types tenv))))
         (proc-type arg-types result-type)))))
 
-;;;;Referencias tomado del interpretados del curso
+;; Referencias tomado del interpretados del curso
 (define setref!
   (lambda (referencia valor)
     (primitive-setref! referencia valor)))
@@ -850,22 +847,16 @@
   (a-ref (position integer?)
          (vec vector?)))
 
-;extend-env: <list-of symbols> <list-of numbers> enviroment -> enviroment
-;función que crea un ambiente extendido
-;Tomado del interpretador de clases
+;; Función que crea un ambiente extendido
+; (Tomado del interpretador de clases)
 (define ambiente-extendido
   (lambda (syms vals env)
     (ambiente-recursivo-extendido syms (list->vector vals) env)))
 
-;Funciones Auxiliares(tomado del interpretador de clases)
-
-; funciones auxiliares para encontrar la posición de un símbolo
-; en la lista de símbolos de un ambiente
-
+;; Función que encuentra la posición de un símbolo en la lista de símbolos de un ambiente
 (define rib-find-position 
   (lambda (sym los)
     (list-find-position sym los)))
-
 
 ;; Ejecución del interpretador
 ;(interpretador)

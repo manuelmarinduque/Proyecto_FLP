@@ -56,7 +56,7 @@ var(int r=1, int t=3, int u=5);
 }
 
 { 
-function-rec hola(x)
+function-rec hola(int x)
 { if ((x > 0))
 {(x * call-rec hola(
 [x --]
@@ -83,4 +83,10 @@ for (x; (x < 10); [x ++])
 {
 x
 }
+}
+
+{
+var(int g=3);
+val g=8;
+g
 }
