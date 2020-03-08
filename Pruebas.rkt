@@ -23,7 +23,7 @@
     (expresion (octal) octal-exp)
     (expresion (hexadecimal) hexadecimal-exp)    
     (expresion ("\"" identificador "\"") string-exp)
-    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")") definicion-exp)
+    (expresion ("var" "(" (separated-list type-exp identificador "=" expresion ",") ")") definicion-exp)
     (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("function" identificador "(" (separated-list type-exp identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
@@ -125,7 +125,7 @@
       (verdad-exp () 'true)
       (falso-exp () 'false)
       (identificador-exp (identificador) (apply-env ambiente identificador))
-      (definicion-exp (identificadores valores) 
+      (definicion-exp (listatipos identificadores valores) 
         (letrec
             (
              (listavalores (map (lambda (x) (evaluar-expresion x ambiente)) valores))             
@@ -472,7 +472,7 @@
       (verdad-exp () bool-type)
       (falso-exp () bool-type)
       (identificador-exp (identificador) int-type)
-      (definicion-exp (identificadores valores) int-type)
+      (definicion-exp (listatipos identificadores valores) int-type)
       (condicional-exp (test-exp true-exp false-exp)
                        (let ((test-type (evaluar-tipo-expresion test-exp tenv))
                              (false-type (evaluar-tipo-expresion false-exp tenv))
