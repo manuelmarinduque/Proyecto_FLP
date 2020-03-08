@@ -1,28 +1,5 @@
 Ejemplos para probar en el interpretador:
 
-
-function funcionX (a, b, c) {if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
-
-function funcionY (int a, int b, int c) {var(x=6); if ((s || (f && g))) {(5+(6+9))} else {"hola"} }
-
-if ((((a/2)>0) && ((a/2)==0))) {var(x=2); "correcto"} else {"malo"; "peor"}
-
-for (var(int i=1); (i < 9); (i ++ 1)) {var(int a=2, int b=5); "hola"}
-
-function-rec funcion-recursiva (int x, int y, int z) {var(int o=call-rec funcion-recursiva (1, 2, 3))}
-
-0x700FDA
-
-0o74563
-
-{var(int x=1);if (x) {true} else {false}}
-
-((4<3)&&((5==5)||(5!=6)))
-
-if(!(4<5)) {4} else {((3 * 4)+ (8 - 2))}
-
-var(int q=7, int w=function Sumar (a,b,c) {(a+(b+(c+7)))}); call w (q,x,call w (1,2,3))
-
 {
 if (true) {true} else {false};
 var(int y=3);
