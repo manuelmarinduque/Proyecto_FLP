@@ -94,6 +94,13 @@ call-rec hola(6)
 }
 
 {
+struct Libro {int valor=300; string nombre="peterpan"; int capitulos=16};
+struct Libro1 {int valor=350; string nombre="peterpan"; int capitulos=16};
+struct Libro2 {int valor=150; string nombre="peterpan"; int capitulos=16};
+(access Libro[0]+ (access Libro1[0] + access Libro2[0])) 
+}
+
+{
 var(int x=0); 
 for (x; (x < 10); [x ++])
 {

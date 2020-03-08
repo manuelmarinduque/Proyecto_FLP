@@ -27,7 +27,7 @@
     (expresion ("if" "(" expresion ")" expresion "else" expresion) condicional-exp)
     (expresion ("function" identificador "(" (separated-list type-exp identificador ",") ")" expresion) procedimiento-exp)
     (expresion ("call" identificador "(" (separated-list expresion ",") ")") invocacion-proc-exp)
-    ;    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
+    (expresion ("for" "(" expresion ";" expresion ";" expresion ")" expresion) iteracion-exp)
     (expresion ("function-rec" identificador "(" (separated-list type-exp identificador ",") ")" expresion) procedimiento-rec-exp)
     (expresion ("call-rec" identificador "(" (separated-list expresion ",") ")") invocacion-proc-rec-exp)
     (expresion ("(" expresion primitiva expresion ")") primitiva-exp)
@@ -169,23 +169,23 @@
                                  (eopl:error 'invocacion-proc-exp "No existe la funcion ~s" nombrefuncion))
                              )
                            )
-      ;      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
-      ;                     (letrec
-      ;                         (
-      ;                          (variable (evaluar-expresion2 inicial-exp ambiente))
-      ;                          (valor (evaluar-expresion inicial-exp ambiente))
-      ;                          (condicion (evaluar-expresion condicion-for ambiente))
-      ;                          (nuevo-valor (evaluar-expresion incrementador ambiente))
-      ;                          (cuerpo-evaluado (evaluar-expresion cuerpo ambiente))
-      ;                          (lista-resultados (if(equal? condicion 'true)
-      ;                                               (list cuerpo-evaluado (evaluar-expresion
-      ;                                                                      (iteracion-exp inicial-exp condicion-for incrementador cuerpo)
-      ;                                                                      (ambiente-extendido (list variable) (list nuevo-valor) ambiente)))
-      ;                                               '()))
-      ;                          )
-      ;                       lista-resultados
-      ;                       )
-      ;                     )
+      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo)
+                     (letrec
+                         (
+                          (variable (evaluar-expresion2 inicial-exp ambiente))
+                          (valor (evaluar-expresion inicial-exp ambiente))
+                          (condicion (evaluar-expresion condicion-for ambiente))
+                          (nuevo-valor (evaluar-expresion incrementador ambiente))
+                          (cuerpo-evaluado (evaluar-expresion cuerpo ambiente))
+                          (lista-resultados (if(equal? condicion 'true)
+                                               (list cuerpo-evaluado (evaluar-expresion
+                                                                      (iteracion-exp inicial-exp condicion-for incrementador cuerpo)
+                                                                      (ambiente-extendido (list variable) (list nuevo-valor) ambiente)))
+                                               '()))
+                          )
+                       lista-resultados
+                       )
+                     )
       (procedimiento-rec-exp (nombre-funcion listatipos parametros cuerpo)
                              (ambiente-extendido-recursivo (list nombre-funcion) (list parametros) (list cuerpo) ambiente)
                              )      
@@ -233,6 +233,12 @@
                         (list-ref estructura-eval posicion))
                     ))
       )))
+
+(define evaluar-expresion2
+  (lambda (exp ambiente)
+    (cases expresion exp
+      (identificador-exp (identificador) identificador)
+      (else (eopl:error "error")))))
 
 ;; Función que realiza la secuenciación
 (define secuenciacion
@@ -307,12 +313,12 @@
       [(equal? (car lis-num) "0o")(conversion (cadr lis-num) 8 "0o")]
       [(equal? (car lis-num) "0x")(conversion (cadr lis-num) 16 "0x")])))
 
-;; Función que 
+;; Función que
 (define hace_todo
   (lambda (num)
     (list_index (cdr (octal-list num))  (car (octal-list num)) )))
 
-;;; Funcion para dejar una lista de un solo nivel
+;; Funcion para dejar una lista de un solo nivel
 ;(define planar
 ;  (lambda (lista)
 ;    (cond
@@ -554,13 +560,9 @@
                      (types-of-expressions
                       (list boolean) tenv)
                      operando (list boolean) exp))
+      (iteracion-exp (inicial-exp condicion-for incrementador cuerpo) int-type)
       (procedimiento-exp (nombrefuncion listatipos parametros cuerpo) int-type)
-      (invocacion-proc-exp (nombrefuncion argumentos)
-;                           (type-of-application
-;                            (evaluar-tipo-expresion nombrefuncion tenv)
-;                            (types-of-expressions argumentos tenv)
-;                            nombrefuncion argumentos exp)
-                           int-type)
+      (invocacion-proc-exp (nombrefuncion argumentos) int-type)
       (procedimiento-rec-exp (nombre-funcion listatipos parametros cuerpo) int-type)
       (invocacion-proc-rec-exp (nombre-funcion argumentos) int-type)
       (estructura-exp (identificador listatipos lista-exp valores) int-type)
@@ -602,16 +604,16 @@
       )))
 
 ;; Función que busca el tipo de un identificador en un ambiente de tipos
-;(define apply-tenv 
-;  (lambda (tenv sym)
-;    (cases ambiente-tipos tenv
-;      (empty-tenv ()
-;                  (eopl:error 'apply-tenv "Unbound variable ~s" sym))
-;      (extended-tenv (syms vals env)
-;                     (let ((pos (list-find-position sym syms)))
-;                       (if (number? pos)
-;                           (list-ref vals pos)
-;                           (apply-tenv env sym)))))))
+(define apply-tenv 
+  (lambda (tenv sym)
+    (cases ambiente-tipos tenv
+      (empty-tenv ()
+                  (eopl:error 'apply-tenv "Unbound variable ~s" sym))
+      (extended-tenv (nombrefuncion syms vals env)
+                     (let ((pos (list-find-position sym syms)))
+                       (if (number? pos)
+                           (list-ref vals pos)
+                           (apply-tenv env sym)))))))
 
 ;; Definición de los tipos para las variables
 (define int-type
