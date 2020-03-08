@@ -56,7 +56,7 @@
     (primitiva4 ("concat") concatenacion-prim)
     (primitiva5 ("!") negacion-prim)
     (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ; Secuenciación
-    ;    (expresion ("val" expresion "=" expresion) asignacion-exp)
+    (expresion ("val" expresion "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list type-exp expresion "=" expresion ";") "}") estructura-exp)
     (expresion ("access" identificador "[" numero "]") acceso-exp)
     (type-exp ("int") int-type-exp)
@@ -217,7 +217,7 @@
                         (evaluar-primitiva2 operando op)
                         ))
       (secuenciacion-exp (expresion lista-exp) (secuenciacion expresion lista-exp ambiente))
-      ;      (asignacion-exp (identificador nuevo-valor) "asignacion")
+      (asignacion-exp (identificador nuevo-valor) "asignacion")
       (estructura-exp (nombreestructura listatipos lista-exp valores)
                       (ambiente-extendido (list nombreestructura)
                                           (list valores lista-exp)
@@ -565,6 +565,7 @@
       (invocacion-proc-rec-exp (nombre-funcion argumentos) int-type)
       (estructura-exp (identificador listatipos lista-exp valores) int-type)
       (acceso-exp (nombreestructura posicion) int-type)
+      (asignacion-exp (identificador nuevo-valor) int-type)
       )))
 
 ;; Función que realiza la secuenciación con tipos
