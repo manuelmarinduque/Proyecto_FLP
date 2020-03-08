@@ -482,11 +482,42 @@
                          true-type))
       (secuenciacion-exp (expresion lista-exp) (secuenciacion-tipos (append (list expresion) lista-exp) tenv))
       (primitiva-exp (componente1 operando componente2)
-                     (type-of-application
-                      (type-of-primitive operando)
-                      (types-of-expressions
-                       (list componente1 componente2) tenv)
-                      operando (list componente1 componente2) exp))
+                     (let (
+                           (componente1-eval (evaluar-tipo-expresion componente1 tenv))
+                           (componente2-eval (evaluar-tipo-expresion componente2 tenv))
+                           )
+                       (if (and (equal? componente1-eval int-type) (equal? componente2-eval int-type))
+                           (type-of-application
+                            (type-of-primitive-int operando)
+                            (types-of-expressions
+                             (list componente1 componente2) tenv)
+                            operando (list componente1 componente2) exp)
+                           (if (and (equal? componente1-eval float-type) (equal? componente2-eval float-type))
+                               (type-of-application
+                                (type-of-primitive-float operando)
+                                (types-of-expressions
+                                 (list componente1 componente2) tenv)
+                                operando (list componente1 componente2) exp)
+                               (if (and (equal? componente1-eval bool-type) (equal? componente2-eval bool-type))
+                                   (type-of-application
+                                    (type-of-primitive-int operando)
+                                    (types-of-expressions
+                                     (list componente1 componente2) tenv)
+                                    operando (list componente1 componente2) exp)
+                                   (if (and (equal? componente1-eval hexadecimal-type) (equal? componente2-eval hexadecimal-type))
+                                       (type-of-application
+                                        (type-of-primitive-hexadecimal operando)
+                                        (types-of-expressions
+                                         (list componente1 componente2) tenv)
+                                        operando (list componente1 componente2) exp)
+                                       (if (and (equal? componente1-eval octal-type) (equal? componente2-eval octal-type))
+                                           (type-of-application
+                                            (type-of-primitive-octal operando)
+                                            (types-of-expressions
+                                             (list componente1 componente2) tenv)
+                                            operando (list componente1 componente2) exp)
+                                           (check-equal-type! componente1-eval componente2-eval exp)
+                                           )))))))
       (primitiva2-exp (componente operando)
                       (type-of-application
                        (type-of-primitive2 operando)
@@ -663,11 +694,11 @@
                    rator (type-to-external-form rator-type))))))
 
 
-;; Función que determina el tipo de una primitiva
-(define type-of-primitive
+;; Función que determina el tipo de una primitiva entera
+(define type-of-primitive-int
   (lambda (prim)
     (cases primitiva prim
-      (suma-prim () (proc-type (list int-type int-type) int-type))
+      (suma-prim () (proc-type (or (list int-type int-type) (list float-type float-type)) (or int-type float-type)))
       (resta-prim () (proc-type (list int-type int-type) int-type))
       (multiplicacion-prim () (proc-type (list int-type int-type) int-type))
       (division-prim () (proc-type (list int-type int-type) (or int-type float-type)))
@@ -678,6 +709,63 @@
       (mayor-igual-prim () (proc-type (list int-type int-type) bool-type))
       (igual-prim () (proc-type (list int-type int-type) bool-type))
       (diferente-prim () (proc-type (list int-type int-type) bool-type))
+      (conjuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      (disyuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      )))
+
+;; Función que determina el tipo de una primitiva flotante
+(define type-of-primitive-float
+  (lambda (prim)
+    (cases primitiva prim
+      (suma-prim () (proc-type (or (list float-type float-type) (list float-type float-type)) (or float-type float-type)))
+      (resta-prim () (proc-type (list float-type float-type) float-type))
+      (multiplicacion-prim () (proc-type (list float-type float-type) float-type))
+      (division-prim () (proc-type (list float-type float-type) (or int-type float-type)))
+      (modulo-prim () (proc-type (list float-type float-type) float-type))
+      (menor-prim () (proc-type (list float-type float-type) bool-type))
+      (mayor-prim () (proc-type (list float-type float-type) bool-type))
+      (menor-igual-prim () (proc-type (list float-type float-type) bool-type))
+      (mayor-igual-prim () (proc-type (list float-type float-type) bool-type))
+      (igual-prim () (proc-type (list float-type float-type) bool-type))
+      (diferente-prim () (proc-type (list float-type float-type) bool-type))
+      (conjuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      (disyuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      )))
+
+;; Función que determina el tipo de una primitiva hexadecimal
+(define type-of-primitive-hexadecimal
+  (lambda (prim)
+    (cases primitiva prim
+      (suma-prim () (proc-type (or (list hexadecimal-type hexadecimal-type) (list hexadecimal-type hexadecimal-type)) (or hexadecimal-type hexadecimal-type)))
+      (resta-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
+      (multiplicacion-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
+      (division-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
+      (modulo-prim () (proc-type (list hexadecimal-type hexadecimal-type) hexadecimal-type))
+      (menor-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (mayor-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (menor-igual-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (mayor-igual-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (igual-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (diferente-prim () (proc-type (list hexadecimal-type hexadecimal-type) bool-type))
+      (conjuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      (disyuncion-prim () (proc-type (list bool-type bool-type) bool-type))
+      )))
+
+;; Función que determina el tipo de una primitiva octal
+(define type-of-primitive-octal
+  (lambda (prim)
+    (cases primitiva prim
+      (suma-prim () (proc-type (or (list octal-type octal-type) (list octal-type octal-type)) (or octal-type octal-type)))
+      (resta-prim () (proc-type (list octal-type octal-type) octal-type))
+      (multiplicacion-prim () (proc-type (list octal-type octal-type) octal-type))
+      (division-prim () (proc-type (list octal-type octal-type) octal-type))
+      (modulo-prim () (proc-type (list octal-type octal-type) octal-type))
+      (menor-prim () (proc-type (list octal-type octal-type) bool-type))
+      (mayor-prim () (proc-type (list octal-type octal-type) bool-type))
+      (menor-igual-prim () (proc-type (list octal-type octal-type) bool-type))
+      (mayor-igual-prim () (proc-type (list octal-type octal-type) bool-type))
+      (igual-prim () (proc-type (list octal-type octal-type) bool-type))
+      (diferente-prim () (proc-type (list octal-type octal-type) bool-type))
       (conjuncion-prim () (proc-type (list bool-type bool-type) bool-type))
       (disyuncion-prim () (proc-type (list bool-type bool-type) bool-type))
       )))

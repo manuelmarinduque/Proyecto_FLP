@@ -57,7 +57,7 @@ call Sumar(e,q)
 var(int q=1);
 var(int w=2);
 if (true) {true} else {false};
-function Sumar (a,b) {(a+(b+(x+w)))};
+function Sumar (int a, int b) {(a+(b+(x+w)))};
 var(int e=4);
 call Sumar(e,q)
 }
