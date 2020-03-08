@@ -58,7 +58,7 @@
     (expresion ("{" expresion (arbno ";" expresion) "}") secuenciacion-exp) ; Secuenciación
     ;    (expresion ("val" expresion "=" expresion) asignacion-exp)
     (expresion ("struct" identificador "{" (separated-list type-exp expresion "=" expresion ";") "}") estructura-exp)
-    ;    (expresion ("access" identificador "[" numero "]") acceso-exp)
+    (expresion ("access" identificador "[" numero "]") acceso-exp)
     (type-exp ("int") int-type-exp)
     (type-exp ("float") float-type-exp)
     (type-exp ("hex") hexadecimal-type-exp)
@@ -84,7 +84,7 @@
   (ambiente-recursivo-extendido (nombre-procedimiento (list-of symbol?))
                                 (parametros (list-of (list-of symbol?)))
                                 (cuerpo (list-of expresion?))
-                                (ambinte ambiente?)))
+                                (ambiente ambiente?)))
 
 (define value?
   (lambda (x)
@@ -222,7 +222,13 @@
                       (ambiente-extendido (list nombreestructura)
                                           (list lista-exp valores)
                                           ambiente))
-      ;      (acceso-exp (nombreestructura posicion) "acceso estructura")
+      (acceso-exp (nombreestructura posicion)
+                  (let
+                      (
+                       (estructura (apply-env ambiente nombreestructura))
+                       )
+                    estructura
+                    ))
       )))
 
 ;; Función que realiza la secuenciación
@@ -555,6 +561,7 @@
       (procedimiento-rec-exp (nombre-funcion listatipos parametros cuerpo) int-type)
       (invocacion-proc-rec-exp (nombre-funcion argumentos) int-type)
       (estructura-exp (identificador listatipos lista-exp valores) int-type)
+      (acceso-exp (nombreestructura posicion) int-type)
       )))
 
 ;; Función que realiza la secuenciación con tipos
